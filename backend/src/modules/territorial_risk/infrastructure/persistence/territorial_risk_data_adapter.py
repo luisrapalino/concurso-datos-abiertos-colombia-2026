@@ -54,6 +54,7 @@ class SqlAlchemyTerritorialRiskDataAdapter:
                 .within_group(HealthIndicatorObservationRow.value)
                 .label("median_value"),
             )
+            .select_from(HealthIndicatorObservationRow)
             .join(
                 HealthIndicatorDefinitionRow,
                 HealthIndicatorObservationRow.definition_id == HealthIndicatorDefinitionRow.id,
@@ -67,3 +68,21 @@ class SqlAlchemyTerritorialRiskDataAdapter:
         if median_value is None:
             return None
         return Decimal(median_value)
+
+    def list_territorial_codes_for_period(
+        self,
+        period: str,
+        *,
+        definition_id: str = GENERAL_MORTALITY_DEFINITION_ID,
+        limit: int = 500,
+    ) -> list[str]:
+        stmt = (
+            select(HealthIndicatorObservationRow.territorial_code)
+            .where(
+                HealthIndicatorObservationRow.definition_id == definition_id,
+                HealthIndicatorObservationRow.period == period,
+            )
+            .order_by(HealthIndicatorObservationRow.territorial_code)
+            .limit(limit)
+        )
+        return list(self._session.scalars(stmt).all())

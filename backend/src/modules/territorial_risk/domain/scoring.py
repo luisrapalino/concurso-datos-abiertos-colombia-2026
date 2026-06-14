@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
+from modules.territorial_risk.domain.explainability import decompose_relative_mortality_score
 from modules.territorial_risk.domain.risk_score import (
     GENERAL_MORTALITY_DEFINITION_ID,
     RULES_VERSION,
@@ -58,5 +59,10 @@ def compute_relative_mortality_score(
         indicator_definition_id=GENERAL_MORTALITY_DEFINITION_ID,
         assumptions=assumptions,
         drivers=drivers,
+        feature_contributions=decompose_relative_mortality_score(
+            observed_value=float(territorial_value),
+            baseline_value=float(national_median),
+            ratio=ratio,
+        ),
         generated_at=generated_at,
     )

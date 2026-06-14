@@ -3,6 +3,8 @@ from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
 
+from modules.territorial_risk.domain.explainability import FeatureContribution
+
 
 class RiskClassification(StrEnum):
     LOW = "low"
@@ -35,4 +37,5 @@ class RiskScore:
     indicator_definition_id: str
     assumptions: tuple[str, ...]
     drivers: tuple[str, ...]
+    feature_contributions: tuple[FeatureContribution, ...]
     generated_at: datetime
