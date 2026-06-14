@@ -1,5 +1,6 @@
 "use client";
 
+import { DataFreshnessBadge } from "@/components/shared/data-freshness-badge";
 import { TerritorialFilters } from "@/components/filters/territorial-filters";
 import { NavBar } from "@/components/layout/nav-bar";
 
@@ -20,7 +21,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 Análisis explicable de indicadores, riesgo, anomalías y tendencias.
               </p>
             </div>
-            <TerritorialFilters />
+            <div className="flex flex-col gap-3 sm:items-end">
+              <DataFreshnessBadge />
+              <TerritorialFilters />
+            </div>
           </div>
         </div>
       </header>

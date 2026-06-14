@@ -43,6 +43,13 @@ function TrendPanelContent({ territorialCode }: { territorialCode: string }) {
       </CardHeader>
       <CardContent>
         <TrendChart trend={trend} />
+        {trend.assumptions.length > 0 ? (
+          <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-[var(--muted-foreground)]">
+            {trend.assumptions.map((assumption) => (
+              <li key={assumption}>{assumption}</li>
+            ))}
+          </ul>
+        ) : null}
       </CardContent>
     </Card>
   );

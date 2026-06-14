@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   BarChart3,
   Lightbulb,
+  Map,
   Shield,
 } from "lucide-react";
 import { Badge, riskBadgeVariant, severityBadgeVariant } from "@/components/ui/badge";
@@ -27,6 +28,12 @@ const modules = [
     title: "Indicadores de salud",
     description: "Observaciones territoriales curadas desde datos abiertos.",
     icon: BarChart3,
+  },
+  {
+    href: "/mapa",
+    title: "Mapa territorial",
+    description: "Distribución geográfica del score de riesgo.",
+    icon: Map,
   },
   {
     href: "/riesgo",

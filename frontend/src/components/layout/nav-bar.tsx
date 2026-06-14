@@ -8,6 +8,7 @@ import {
   BarChart3,
   Home,
   Lightbulb,
+  Map,
   Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils/cn";
 const navItems = [
   { href: "/", label: "Inicio", icon: Home },
   { href: "/indicadores", label: "Indicadores", icon: BarChart3 },
+  { href: "/mapa", label: "Mapa territorial", icon: Map },
   { href: "/riesgo", label: "Riesgo territorial", icon: Shield },
   { href: "/anomalias", label: "Anomalías", icon: AlertTriangle },
   { href: "/tendencias", label: "Tendencias", icon: Activity },

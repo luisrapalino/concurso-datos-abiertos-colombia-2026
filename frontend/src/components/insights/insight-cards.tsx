@@ -63,10 +63,16 @@ function InsightCardsContent({ territorialCode }: { territorialCode: string }) {
             </div>
             <CardDescription>
               Versión {insight.data_version} · Territorio {insight.territorial_code}
+              {insight.analysis_period ? ` · Periodo ${insight.analysis_period}` : ""}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <p className="leading-relaxed text-[var(--foreground)]">{insight.narrative}</p>
+            {insight.system_context ? (
+              <p className="rounded-md border border-[var(--border)] bg-[var(--muted)]/40 p-2 text-xs text-[var(--muted-foreground)]">
+                {insight.system_context}
+              </p>
+            ) : null}
             <p className="text-[var(--muted-foreground)]">
               Fuentes: {insight.sources.join(", ")}
             </p>

@@ -1,8 +1,10 @@
 import type {
   AnomalyAlertPage,
+  DataFreshness,
   HealthIndicator,
   Insight,
   RiskScore,
+  TerritorialRiskMapPoint,
   TerritorialTrend,
 } from "@/lib/api/types";
 
@@ -48,6 +50,24 @@ async function fetchJson<T>(url: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+function normalizeRiskScore(payload: RiskScore): RiskScore {
+  return {
+    ...payload,
+    drivers: payload.drivers ?? [],
+    assumptions: payload.assumptions ?? [],
+    feature_contributions: payload.feature_contributions ?? [],
+    persisted: payload.persisted ?? false,
+  };
+}
+
+function normalizeTerritorialTrend(payload: TerritorialTrend): TerritorialTrend {
+  return {
+    ...payload,
+    assumptions: payload.assumptions ?? [],
+    points: payload.points ?? [],
+  };
+}
+
 export const epidemiologicalApi = {
   listHealthIndicators(params?: {
     territorial_code?: string;
@@ -61,7 +81,9 @@ export const epidemiologicalApi = {
   },
 
   predictRisk(params: { territorial_code: string; period: string }) {
-    return fetchJson<RiskScore>(buildApiUrl("/predict-risk", params));
+    return fetchJson<RiskScore>(buildApiUrl("/predict-risk", params)).then(
+      normalizeRiskScore,
+    );
   },
 
   listAnomalies(params?: {
@@ -79,10 +101,22 @@ export const epidemiologicalApi = {
   }) {
     return fetchJson<TerritorialTrend>(
       buildApiUrl("/territorial-trends", params),
-    );
+    ).then(normalizeTerritorialTrend);
   },
 
   listInsights(params: { territorial_code: string; limit?: number }) {
     return fetchJson<Insight[]>(buildApiUrl("/insights", params));
+  },
+
+  getDataFreshness(sourceId = "datos-gov-mortality-indicators") {
+    return fetchJson<DataFreshness>(
+      buildApiUrl("/data-freshness", { source_id: sourceId }),
+    );
+  },
+
+  listTerritorialRiskMap(params: { period: string; limit?: number }) {
+    return fetchJson<TerritorialRiskMapPoint[]>(
+      buildApiUrl("/territorial-risk-map", params),
+    );
   },
 };

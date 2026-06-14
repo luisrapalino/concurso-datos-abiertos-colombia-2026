@@ -47,6 +47,7 @@ function IndicatorTableContent({
             <th className="px-4 py-3 font-medium">Periodo</th>
             <th className="px-4 py-3 font-medium">Valor</th>
             <th className="px-4 py-3 font-medium">Unidad</th>
+            <th className="px-4 py-3 font-medium">Ingestado</th>
           </tr>
         </thead>
         <tbody>
@@ -60,6 +61,14 @@ function IndicatorTableContent({
               <td className="px-4 py-3">{item.period}</td>
               <td className="px-4 py-3 tabular-nums">{item.value.toFixed(2)}</td>
               <td className="px-4 py-3">{item.measurement_unit}</td>
+              <td className="px-4 py-3 text-xs text-[var(--muted-foreground)]">
+                {item.ingested_at
+                  ? new Intl.DateTimeFormat("es-CO", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    }).format(new Date(item.ingested_at))
+                  : "—"}
+              </td>
             </tr>
           ))}
         </tbody>

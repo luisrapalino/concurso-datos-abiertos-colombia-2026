@@ -40,6 +40,10 @@ function RiskPanelContent({
   if (error) return <ErrorState message={error} onRetry={reload} />;
   if (!risk) return <EmptyState message="Sin datos de riesgo disponibles." />;
 
+  const drivers = risk.drivers ?? [];
+  const assumptions = risk.assumptions ?? [];
+  const featureContributions = risk.feature_contributions ?? [];
+
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
@@ -80,15 +84,36 @@ function RiskPanelContent({
           <div>
             <p className="mb-2 font-medium">Drivers</p>
             <ul className="list-disc space-y-1 pl-5 text-[var(--muted-foreground)]">
-              {risk.drivers.map((driver) => (
+              {drivers.map((driver) => (
                 <li key={driver}>{driver}</li>
               ))}
             </ul>
           </div>
           <div>
+            <p className="mb-2 font-medium">Contribuciones explicables</p>
+            <ul className="space-y-2 text-[var(--muted-foreground)]">
+              {featureContributions.length > 0 ? (
+                featureContributions.map((item) => (
+                  <li key={item.feature} className="rounded-md border border-[var(--border)] p-2">
+                    <p className="font-medium text-[var(--foreground)]">{item.feature}</p>
+                    <p className="text-xs">{item.description}</p>
+                    <p className="mt-1 tabular-nums text-xs">
+                      Valor {item.value.toFixed(2)} · Contribución {item.contribution.toFixed(1)}
+                    </p>
+                  </li>
+                ))
+              ) : (
+                <li className="text-xs">
+                  Contribuciones no disponibles en esta versión de la API. Reconstruye el
+                  contenedor backend para obtener el desglose explicable.
+                </li>
+              )}
+            </ul>
+          </div>
+          <div>
             <p className="mb-2 font-medium">Supuestos</p>
             <ul className="list-disc space-y-1 pl-5 text-[var(--muted-foreground)]">
-              {risk.assumptions.map((assumption) => (
+              {assumptions.map((assumption) => (
                 <li key={assumption}>{assumption}</li>
               ))}
             </ul>

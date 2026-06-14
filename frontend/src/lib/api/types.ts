@@ -3,6 +3,31 @@ export type AnomalySeverity = "low" | "medium" | "high";
 export type TrendPointKind = "historical" | "forecast";
 export type InsightConfidence = "low" | "medium" | "high";
 
+export interface FeatureContribution {
+  feature: string;
+  value: number;
+  contribution: number;
+  description: string;
+}
+
+export interface DataFreshness {
+  source_id: string;
+  source_name: string;
+  last_successful_ingestion_at: string | null;
+  records_upserted: number | null;
+  latest_period_available: string | null;
+  coverage_note: string;
+}
+
+export interface TerritorialRiskMapPoint {
+  territorial_code: string;
+  period: string;
+  score: number;
+  classification: RiskClassification;
+  latitude: number;
+  longitude: number;
+}
+
 export interface HealthIndicator {
   id: string;
   definition_id: string;
@@ -26,7 +51,9 @@ export interface RiskScore {
   baseline_value: number;
   assumptions: string[];
   drivers: string[];
+  feature_contributions: FeatureContribution[];
   generated_at: string;
+  persisted: boolean;
 }
 
 export interface AnomalyAlert {
@@ -62,6 +89,7 @@ export interface TerritorialTrend {
   points: TrendPoint[];
   forecast_horizon_weeks: number;
   model_version: string;
+  assumptions: string[];
 }
 
 export interface Insight {
@@ -72,4 +100,6 @@ export interface Insight {
   confidence: InsightConfidence;
   data_version: string;
   sources: string[];
+  analysis_period?: string | null;
+  system_context?: string | null;
 }
