@@ -79,3 +79,13 @@ class DivipolaCatalog:
         if entry is None:
             return None
         return str(entry.get("name", "")) or None
+
+    def municipality_coordinates(self, code: str) -> tuple[float, float] | None:
+        entry = self._municipalities.get(code.strip().zfill(5))
+        if entry is None:
+            return None
+        latitude = entry.get("latitude")
+        longitude = entry.get("longitude")
+        if latitude is None or longitude is None:
+            return None
+        return float(latitude), float(longitude)

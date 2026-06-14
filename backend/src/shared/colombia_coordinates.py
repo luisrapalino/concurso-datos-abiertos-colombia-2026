@@ -1,5 +1,6 @@
-"""Approximate coordinates for territorial visualization (department centroids)."""
+"""Approximate coordinates for territorial visualization."""
 
+from shared.divipola_catalog import DivipolaCatalog
 from shared.territorial import TerritorialCode
 
 # Department-level centroids (lat, lng) keyed by two-digit DANE department code.
@@ -41,8 +42,20 @@ DEPARTMENT_CENTROIDS: dict[str, tuple[float, float]] = {
 
 DEFAULT_COORDINATES = (4.5709, -74.2973)
 
+_catalog: DivipolaCatalog | None = None
+
+
+def _get_catalog() -> DivipolaCatalog:
+    global _catalog
+    if _catalog is None:
+        _catalog = DivipolaCatalog.from_file()
+    return _catalog
+
 
 def resolve_territorial_coordinates(territorial_code: TerritorialCode | str) -> tuple[float, float]:
     code = str(territorial_code).zfill(5)
+    municipal_coords = _get_catalog().municipality_coordinates(code)
+    if municipal_coords is not None:
+        return municipal_coords
     department_code = code[:2]
     return DEPARTMENT_CENTROIDS.get(department_code, DEFAULT_COORDINATES)
