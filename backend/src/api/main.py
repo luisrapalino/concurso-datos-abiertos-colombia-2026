@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from api.exception_handlers import register_exception_handlers
 from api.v1.router import api_v1_router
 from config.settings import get_settings
 from infrastructure.persistence.database import dispose_engine, init_engine
@@ -19,12 +20,16 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="Territorial Epidemiological Intelligence API",
         version="1.0.0",
-        description="REST API for territorial epidemiological indicators, risk, anomalies, and insights.",
+        description=(
+            "REST API for territorial epidemiological indicators, risk, anomalies, and insights."
+        ),
         openapi_url="/api/v1/openapi.json",
         docs_url="/docs",
         redoc_url="/redoc",
         lifespan=lifespan,
     )
+
+    register_exception_handlers(application)
 
     @application.get("/health", tags=["operations"])
     def health() -> dict[str, str]:
