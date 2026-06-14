@@ -45,14 +45,41 @@ class IngestMortalityIndicatorsUseCase:
         self,
         command: IngestMortalityIndicatorsCommand,
     ) -> list[RawMortalityIndicatorRecord]:
+        target_years = _resolve_target_years(command)
+        if len(target_years) == 1:
+            return self._fetch_for_year(command, target_years[0])
+
+        per_year_limit = max(command.limit // len(target_years), 1)
+        collected: list[RawMortalityIndicatorRecord] = []
+        for year in target_years:
+            if len(collected) >= command.limit:
+                break
+            remaining = command.limit - len(collected)
+            collected.extend(
+                self._fetch_for_year(
+                    command,
+                    year,
+                    limit=min(per_year_limit, remaining),
+                ),
+            )
+        return collected
+
+    def _fetch_for_year(
+        self,
+        command: IngestMortalityIndicatorsCommand,
+        year: int | None,
+        *,
+        limit: int | None = None,
+    ) -> list[RawMortalityIndicatorRecord]:
+        max_records = limit if limit is not None else command.limit
         collected: list[RawMortalityIndicatorRecord] = []
         offset = 0
-        batch_size = min(command.limit, 5000)
+        batch_size = min(max_records, 5000)
 
-        while len(collected) < command.limit:
+        while len(collected) < max_records:
             batch = self._source_client.fetch_general_mortality_records(
-                year=command.year,
-                limit=min(batch_size, command.limit - len(collected)),
+                year=year,
+                limit=min(batch_size, max_records - len(collected)),
                 offset=offset,
             )
             if not batch:
@@ -63,3 +90,11 @@ class IngestMortalityIndicatorsUseCase:
             offset += len(batch)
 
         return collected
+
+
+def _resolve_target_years(command: IngestMortalityIndicatorsCommand) -> tuple[int | None, ...]:
+    if command.years:
+        return command.years
+    if command.year is not None:
+        return (command.year,)
+    return (None,)

@@ -45,6 +45,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ingest_parser.add_argument("--year", type=int, default=None, help="Restrict to a calendar year")
     ingest_parser.add_argument(
+        "--years",
+        type=str,
+        default=None,
+        help="Comma-separated calendar years (e.g. 2018,2019,2020). Overrides --year.",
+    )
+    ingest_parser.add_argument(
         "--limit",
         type=int,
         default=5000,
@@ -58,8 +64,19 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _parse_years(raw_years: str | None) -> tuple[int, ...] | None:
+    if not raw_years:
+        return None
+    years = tuple(int(value.strip()) for value in raw_years.split(",") if value.strip())
+    if not years:
+        msg = "At least one year must be provided when using --years."
+        raise ValueError(msg)
+    return years
+
+
 def run_ingest(args: argparse.Namespace) -> int:
     registry = SOURCE_REGISTRY[args.source]
+    years = _parse_years(args.years)
     settings = get_settings()
     init_engine(settings.database_url)
     session_gen = get_session()
@@ -76,7 +93,8 @@ def run_ingest(args: argparse.Namespace) -> int:
                 source_id=registry["source_id"],
                 definition_id=registry["definition_id"],
                 source_indicator_key=registry["source_indicator_key"],
-                year=args.year,
+                year=None if years else args.year,
+                years=years,
                 limit=args.limit,
                 dry_run=args.dry_run,
             ),

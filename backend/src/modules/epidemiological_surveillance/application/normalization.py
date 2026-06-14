@@ -8,6 +8,7 @@ class IngestMortalityIndicatorsCommand:
     definition_id: str
     source_indicator_key: str
     year: int | None = None
+    years: tuple[int, ...] | None = None
     limit: int = 5000
     dry_run: bool = False
 
