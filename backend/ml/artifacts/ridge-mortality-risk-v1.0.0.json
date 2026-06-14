@@ -1,0 +1,16 @@
+{
+  "model_version": "ridge-mortality-risk-v1.0.0",
+  "model_name": "ridge-mortality-risk-v1.0.0",
+  "trained_at": "2026-06-14T23:15:01.598311+00:00",
+  "metrics": {
+    "train_mae": 3.5313
+  },
+  "features": [
+    "observed_mortality_rate",
+    "national_median",
+    "mortality_ratio"
+  ],
+  "dataset_note": "reproducible synthetic panel aligned with rule-based scoring",
+  "explainer": "shap.LinearExplainer",
+  "notes": "Promote with `python -m modules.territorial_risk.interfaces.ml_cli promote ridge-mortality-risk-v1.0.0` to enable SHAP-backed serving."
+}
