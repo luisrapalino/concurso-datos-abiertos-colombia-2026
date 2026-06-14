@@ -11,6 +11,7 @@ COPY requirements.txt requirements-ml.txt ./
 RUN pip install --no-cache-dir -r requirements.txt -r requirements-ml.txt
 
 COPY src ./src
+COPY data ./data
 COPY alembic.ini .
 COPY alembic ./alembic
 

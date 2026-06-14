@@ -39,5 +39,24 @@ services:
     depends_on:
       - api
 
+  ingestion-worker:
+    build:
+      context: ./backend
+    entrypoint:
+      [
+        "sh",
+        "-c",
+        "cd /app && alembic -c /app/alembic.ini upgrade head && exec python -m modules.epidemiological_surveillance.interfaces.scheduler",
+      ]
+    environment:
+      DATABASE_URL: postgresql+psycopg://epintel:epintel@db:5432/epintel
+      INGESTION_SCHEDULE_ENABLED: "true"
+      INGESTION_INTERVAL_HOURS: "24"
+      INGESTION_DEFAULT_YEARS: "2018,2019,2020"
+      INGESTION_DEFAULT_LIMIT: "15000"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   postgres_data:
