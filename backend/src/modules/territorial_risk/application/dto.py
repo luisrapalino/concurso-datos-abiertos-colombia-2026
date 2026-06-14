@@ -25,5 +25,9 @@ class RiskScoreReadDto(BaseModel):
     score: float = Field(ge=0, le=100, description="Normalized territorial risk score.")
     classification: RiskClassification
     model_version: str
+    indicator_definition_id: str
+    observed_value: float
+    baseline_value: float
     assumptions: list[str]
+    drivers: list[str]
     generated_at: datetime
