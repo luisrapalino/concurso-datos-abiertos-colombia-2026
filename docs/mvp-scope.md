@@ -30,19 +30,22 @@ Entregar un **vertical slice** de inteligencia epidemiológica territorial: dato
 
 - **No** es decisión clínica individual ni alerta automática vinculante.
 - **Sí** es un **score territorial relativo** para priorizar revisión analítica humana, con versión de reglas/modelo y supuestos explícitos.
-- Los endpoints `predict-risk`, `anomalies`, `territorial-trends` e `insights` permanecen **stub** hasta contar con datos curados suficientes (fases 4–6).
+- Los endpoints analíticos (`predict-risk`, `anomalies`, `territorial-trends`, `insights`) operan sobre **datos curados** con trazabilidad y explicaciones acotadas.
 
 ## Criterios de aceptación del vertical slice
 
 1. Un job/CLI de ingestión carga observaciones idempotentes en PostgreSQL.
 2. Cada corrida queda registrada (`ingestion_runs`) con estado y conteo de registros.
 3. `GET /api/v1/health-indicators` devuelve observaciones reales filtrables por territorio y periodo.
-4. OpenAPI refleja los campos `period`, `value` y metadatos de fuente.
-5. Documentación de linaje en [`data-sources.md`](data-sources.md).
+4. `GET /api/v1/data-freshness` expone la última ingestión exitosa.
+5. `GET /api/v1/predict-risk` persiste scores auditables con contribuciones explicables.
+6. OpenAPI refleja los campos `period`, `value` y metadatos de fuente.
+7. Frontend cubre indicadores, riesgo, anomalías, tendencias, insights y mapa territorial.
+8. Documentación de linaje en [`data-sources.md`](data-sources.md).
 
 ## Límites explícitos
 
 - Sin autenticación institucional en MVP.
 - Sin cobertura nacional garantizada en todos los indicadores.
 - Sin validación epidemiológica externa incluida en el software.
-- ML explicable completo en fases posteriores (CRISP-ML).
+- Prophet y experimentos SHAP offline complementan reglas MVP; ver [`ml-evaluation.md`](ml-evaluation.md).
