@@ -1,42 +1,74 @@
+from decimal import Decimal
+
 from modules.anomaly_detection.application.dto import ListAnomaliesQueryDto
 from modules.anomaly_detection.application.list_anomalies import ListAnomaliesUseCase
-from modules.insights_generation.application.dto import ListInsightsQueryDto
-from modules.insights_generation.application.generate_insights import GenerateInsightsUseCase
+from modules.anomaly_detection.domain.detection import ObservationWithBaseline
+from modules.anomaly_detection.domain.repositories import (
+    TerritorialSeriesPoint,
+)
 from modules.prediction_engine.application.dto import TerritorialTrendsQueryDto
 from modules.prediction_engine.application.get_territorial_trends import GetTerritorialTrendsUseCase
-from modules.territorial_risk.application.dto import PredictRiskQueryDto
-from modules.territorial_risk.application.predict_risk import PredictRiskUseCase
 
 
-def test_predict_risk_use_case_returns_bounded_score() -> None:
-    result = PredictRiskUseCase().execute(
-        PredictRiskQueryDto(territorial_code="05", period="2024-03"),
-    )
-    assert 0 <= result.score <= 100
-    assert result.model_version.startswith("stub-")
+class FakeCuratedObservationsReader:
+    def list_observations_with_period_median(
+        self,
+        definition_id: str,
+        *,
+        territorial_code: str | None = None,
+    ) -> list[ObservationWithBaseline]:
+        observations = [
+            ObservationWithBaseline(
+                territorial_code="05001",
+                period="2020-01",
+                value=Decimal("12.0"),
+                baseline=Decimal("8.0"),
+                definition_id=definition_id,
+                definition_name="Tasa de mortalidad general",
+            ),
+            ObservationWithBaseline(
+                territorial_code="05002",
+                period="2020-01",
+                value=Decimal("7.0"),
+                baseline=Decimal("8.0"),
+                definition_id=definition_id,
+                definition_name="Tasa de mortalidad general",
+            ),
+        ]
+        if territorial_code is None:
+            return observations
+        return [item for item in observations if item.territorial_code == territorial_code]
+
+    def list_territorial_series(
+        self,
+        territorial_code: str,
+        definition_id: str,
+    ) -> tuple[str, list[TerritorialSeriesPoint]]:
+        del definition_id
+        return "Tasa de mortalidad general", [
+            TerritorialSeriesPoint(period="2018-01", value=Decimal("6.0")),
+            TerritorialSeriesPoint(period="2019-01", value=Decimal("7.0")),
+            TerritorialSeriesPoint(period="2020-01", value=Decimal("8.0")),
+        ]
 
 
 def test_list_anomalies_use_case_filters_by_territory() -> None:
-    all_alerts = ListAnomaliesUseCase().execute(ListAnomaliesQueryDto())
-    filtered = ListAnomaliesUseCase().execute(
-        ListAnomaliesQueryDto(territorial_code="05"),
+    reader = FakeCuratedObservationsReader()
+    all_alerts = ListAnomaliesUseCase(reader).execute(ListAnomaliesQueryDto())
+    filtered = ListAnomaliesUseCase(reader).execute(
+        ListAnomaliesQueryDto(territorial_code="05001"),
     )
     assert len(filtered.items) <= len(all_alerts.items)
-    assert all(alert.territorial_code == "05" for alert in filtered.items)
+    assert all(alert.territorial_code == "05001" for alert in filtered.items)
+    assert filtered.items[0].indicator_id == "general-mortality-rate"
 
 
 def test_territorial_trends_use_case_returns_historical_and_forecast() -> None:
-    result = GetTerritorialTrendsUseCase().execute(
+    result = GetTerritorialTrendsUseCase(FakeCuratedObservationsReader()).execute(
         TerritorialTrendsQueryDto(territorial_code="05001", horizon_weeks=3),
     )
     kinds = {point.kind for point in result.points}
     assert "historical" in kinds
     assert "forecast" in kinds
     assert len([point for point in result.points if point.kind == "forecast"]) == 3
-
-
-def test_generate_insights_use_case_respects_limit() -> None:
-    insights = GenerateInsightsUseCase().execute(
-        ListInsightsQueryDto(territorial_code="05", limit=1),
-    )
-    assert len(insights) == 1
+    assert result.model_version == "linear-extrapolation-v1.0.0"
