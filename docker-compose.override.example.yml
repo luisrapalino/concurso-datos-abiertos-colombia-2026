@@ -1,0 +1,9 @@
+# Copia a docker-compose.override.yml si hay conflictos de puertos en el host.
+# Docker Compose fusiona este archivo automáticamente con docker-compose.yml.
+services:
+  db:
+    ports: !override
+      - "5433:5432"
+  web:
+    ports: !override
+      - "3002:3000"
