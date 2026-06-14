@@ -31,3 +31,17 @@ class DataQualityReadDto(BaseModel):
     latest_ingestion_at: datetime | None = None
     temporal_coverage_note: str
     territorial_catalog: TerritorialCatalogMetadataDto
+
+
+class DataDriftReadDto(BaseModel):
+    definition_id: str
+    latest_period: Period | None = None
+    previous_period: Period | None = None
+    latest_observation_count: int
+    previous_observation_count: int
+    observation_count_delta: int
+    latest_mean_value: float | None = None
+    previous_mean_value: float | None = None
+    mean_value_delta: float | None = None
+    drift_status: str
+    drift_note: str

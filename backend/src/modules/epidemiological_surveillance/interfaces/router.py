@@ -5,9 +5,11 @@ from sqlalchemy.orm import Session
 
 from api.deps import get_db_session
 from modules.epidemiological_surveillance.application.dto import (
+    DataDriftReadDto,
     DataFreshnessReadDto,
     DataQualityReadDto,
 )
+from modules.epidemiological_surveillance.application.get_data_drift import GetDataDriftUseCase
 from modules.epidemiological_surveillance.application.get_data_freshness import (
     GetDataFreshnessUseCase,
 )
@@ -28,6 +30,12 @@ def get_data_quality_use_case(
     return GetDataQualityUseCase(session)
 
 
+def get_data_drift_use_case(
+    session: Annotated[Session, Depends(get_db_session)],
+) -> GetDataDriftUseCase:
+    return GetDataDriftUseCase(session)
+
+
 @router.get("/data-freshness", response_model=DataFreshnessReadDto)
 def get_data_freshness(
     source_id: Annotated[str, Query(min_length=1)] = "datos-gov-mortality-indicators",
@@ -42,3 +50,11 @@ def get_data_quality(
     use_case: Annotated[GetDataQualityUseCase, Depends(get_data_quality_use_case)] = ...,
 ) -> DataQualityReadDto:
     return use_case.execute(source_id=source_id)
+
+
+@router.get("/data-drift", response_model=DataDriftReadDto)
+def get_data_drift(
+    definition_id: Annotated[str, Query(min_length=1)] = "general-mortality-rate",
+    use_case: Annotated[GetDataDriftUseCase, Depends(get_data_drift_use_case)] = ...,
+) -> DataDriftReadDto:
+    return use_case.execute(definition_id=definition_id)
