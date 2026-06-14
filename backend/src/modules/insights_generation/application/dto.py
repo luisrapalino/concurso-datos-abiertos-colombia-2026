@@ -24,3 +24,8 @@ class InsightReadDto(BaseModel):
     confidence: InsightConfidence
     data_version: str
     sources: list[str]
+    analysis_period: str | None = None
+    system_context: str | None = Field(
+        default=None,
+        description="Explains data window, models and limits of the narrative.",
+    )

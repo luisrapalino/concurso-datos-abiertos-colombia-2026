@@ -25,6 +25,7 @@ def test_generate_insights_includes_risk_anomaly_and_coverage() -> None:
             indicator_definition_id="general-mortality-rate",
             assumptions=(),
             drivers=(),
+            feature_contributions=(),
             generated_at=datetime.now(tz=UTC),
         ),
         anomaly=AnomalyAlert(

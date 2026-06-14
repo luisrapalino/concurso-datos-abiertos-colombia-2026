@@ -63,6 +63,16 @@ class FakeRiskDataPort:
             return Decimal("8.0")
         return None
 
+    def list_territorial_codes_for_period(
+        self,
+        period: str,
+        *,
+        definition_id: str = "general-mortality-rate",
+        limit: int = 500,
+    ) -> list[str]:
+        del period, definition_id, limit
+        return ["05001"]
+
 
 def test_generate_insights_use_case_respects_limit() -> None:
     insights = GenerateInsightsUseCase(
@@ -72,3 +82,4 @@ def test_generate_insights_use_case_respects_limit() -> None:
     assert len(insights) == 2
     assert insights[0].data_version == INSIGHTS_VERSION
     assert insights[0].sources
+    assert insights[0].system_context

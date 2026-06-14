@@ -80,10 +80,29 @@ class GenerateInsightsUseCase:
         )
 
         insights = generate_insights(context)
-        return [_to_dto(insight) for insight in insights[: query.limit]]
+        system_context = _build_system_context(context)
+        return [
+            _to_dto(insight, analysis_period=latest.period, system_context=system_context)
+            for insight in insights[: query.limit]
+        ]
 
 
-def _to_dto(insight: Insight) -> InsightReadDto:
+def _build_system_context(context: TerritorialInsightContext) -> str:
+    risk_version = context.risk_score.model_version if context.risk_score else "n/a"
+    return (
+        f"Sistema: ventana de {context.trend.historical_points} periodo(s), "
+        f"último {context.trend.latest_period}. "
+        f"Modelo de riesgo {risk_version}; narrativa {INSIGHTS_VERSION}. "
+        "No sustituye validación epidemiológica."
+    )
+
+
+def _to_dto(
+    insight: Insight,
+    *,
+    analysis_period: str,
+    system_context: str,
+) -> InsightReadDto:
     return InsightReadDto(
         id=insight.id,
         territorial_code=insight.territorial_code,
@@ -92,4 +111,6 @@ def _to_dto(insight: Insight) -> InsightReadDto:
         confidence=InsightConfidence(insight.confidence.value),
         data_version=insight.data_version or INSIGHTS_VERSION,
         sources=list(insight.sources),
+        analysis_period=analysis_period,
+        system_context=system_context,
     )
