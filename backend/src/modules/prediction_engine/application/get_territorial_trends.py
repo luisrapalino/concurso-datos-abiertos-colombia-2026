@@ -5,19 +5,21 @@ from modules.prediction_engine.application.dto import (
     TrendPointDto,
     TrendPointKind,
 )
-from modules.prediction_engine.domain.forecast import (
-    FORECAST_VERSION,
-    linear_extrapolation_forecast,
-)
+from modules.prediction_engine.domain.forecast import ForecastServicePort
 from shared.exceptions import EntityNotFoundError
 from shared.period import Period
 
 
 class GetTerritorialTrendsUseCase:
-    """Returns historical series from curated data with simple linear forecast."""
+    """Returns historical series from curated data with a versioned forecast."""
 
-    def __init__(self, reader: CuratedObservationsReader) -> None:
+    def __init__(
+        self,
+        reader: CuratedObservationsReader,
+        forecast_service: ForecastServicePort,
+    ) -> None:
         self._reader = reader
+        self._forecast_service = forecast_service
 
     def execute(self, query: TerritorialTrendsQueryDto) -> TerritorialTrendReadDto:
         definition_id = query.indicator_id
@@ -39,16 +41,17 @@ class GetTerritorialTrendsUseCase:
             )
             for point in historical
         ]
+        forecast = self._forecast_service.forecast(
+            historical,
+            steps=query.horizon_weeks,
+        )
         forecast_points = [
             TrendPointDto(
                 period=Period(point.period),
                 value=point.value,
                 kind=TrendPointKind.FORECAST,
             )
-            for point in linear_extrapolation_forecast(
-                historical,
-                steps=query.horizon_weeks,
-            )
+            for point in forecast.points
         ]
 
         return TerritorialTrendReadDto(
@@ -57,5 +60,6 @@ class GetTerritorialTrendsUseCase:
             indicator_name=indicator_name,
             points=[*historical_points, *forecast_points],
             forecast_horizon_weeks=query.horizon_weeks,
-            model_version=FORECAST_VERSION,
+            model_version=forecast.model_version,
+            assumptions=list(forecast.assumptions),
         )

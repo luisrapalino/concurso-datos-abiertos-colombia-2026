@@ -1,15 +1,38 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Protocol
 
 from modules.anomaly_detection.domain.repositories import TerritorialSeriesPoint
 
-FORECAST_VERSION = "linear-extrapolation-v1.0.0"
+LINEAR_FORECAST_VERSION = "linear-extrapolation-v1.0.0"
+PROPHET_FORECAST_VERSION = "prophet-annual-v1.0.0"
+MIN_PROPHET_POINTS = 3
+
+# Backward-compatible alias used in tests and DTO defaults.
+FORECAST_VERSION = LINEAR_FORECAST_VERSION
 
 
 @dataclass(frozen=True, slots=True)
 class ForecastPoint:
     period: str
     value: float
+
+
+@dataclass(frozen=True, slots=True)
+class ForecastResult:
+    points: tuple[ForecastPoint, ...]
+    model_version: str
+    assumptions: tuple[str, ...]
+
+
+class ForecastServicePort(Protocol):
+    def forecast(
+        self,
+        historical: list[TerritorialSeriesPoint],
+        *,
+        steps: int,
+    ) -> ForecastResult:
+        """Produce forecast points with versioned assumptions."""
 
 
 def next_annual_period(period: str) -> str:

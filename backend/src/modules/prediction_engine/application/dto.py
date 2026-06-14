@@ -30,3 +30,4 @@ class TerritorialTrendReadDto(BaseModel):
     points: list[TrendPointDto]
     forecast_horizon_weeks: int
     model_version: str
+    assumptions: list[str] = Field(default_factory=list)

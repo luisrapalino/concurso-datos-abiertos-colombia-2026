@@ -8,6 +8,9 @@ from modules.anomaly_detection.domain.repositories import (
 )
 from modules.prediction_engine.application.dto import TerritorialTrendsQueryDto
 from modules.prediction_engine.application.get_territorial_trends import GetTerritorialTrendsUseCase
+from modules.prediction_engine.infrastructure.forecasting.composite_forecast_service import (
+    LinearForecastService,
+)
 
 
 class FakeCuratedObservationsReader:
@@ -64,7 +67,10 @@ def test_list_anomalies_use_case_filters_by_territory() -> None:
 
 
 def test_territorial_trends_use_case_returns_historical_and_forecast() -> None:
-    result = GetTerritorialTrendsUseCase(FakeCuratedObservationsReader()).execute(
+    result = GetTerritorialTrendsUseCase(
+        FakeCuratedObservationsReader(),
+        LinearForecastService(),
+    ).execute(
         TerritorialTrendsQueryDto(territorial_code="05001", horizon_weeks=3),
     )
     kinds = {point.kind for point in result.points}

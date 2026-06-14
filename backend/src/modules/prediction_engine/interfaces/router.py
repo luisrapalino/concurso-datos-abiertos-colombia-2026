@@ -12,6 +12,9 @@ from modules.prediction_engine.application.dto import (
     TerritorialTrendsQueryDto,
 )
 from modules.prediction_engine.application.get_territorial_trends import GetTerritorialTrendsUseCase
+from modules.prediction_engine.infrastructure.forecasting.composite_forecast_service import (
+    CompositeForecastService,
+)
 
 router = APIRouter(tags=["territorial-trends"])
 
@@ -20,7 +23,8 @@ def get_territorial_trends_use_case(
     session: Annotated[Session, Depends(get_db_session)],
 ) -> GetTerritorialTrendsUseCase:
     reader = SqlAlchemyCuratedObservationsReader(session)
-    return GetTerritorialTrendsUseCase(reader)
+    forecast_service = CompositeForecastService()
+    return GetTerritorialTrendsUseCase(reader, forecast_service)
 
 
 @router.get("/territorial-trends", response_model=TerritorialTrendReadDto)
