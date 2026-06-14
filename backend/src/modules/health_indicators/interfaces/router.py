@@ -5,8 +5,12 @@ from sqlalchemy.orm import Session
 
 from api.deps import get_db_session
 from modules.health_indicators.application.dto import HealthIndicatorReadDto
-from modules.health_indicators.application.list_health_indicators import ListHealthIndicatorsUseCase
-from modules.health_indicators.infrastructure.persistence.sqlalchemy_repository import SqlAlchemyHealthIndicatorRepository
+from modules.health_indicators.application.list_health_indicators import (
+    ListHealthIndicatorsUseCase,
+)
+from modules.health_indicators.infrastructure.persistence.sqlalchemy_repository import (
+    SqlAlchemyHealthIndicatorRepository,
+)
 
 router = APIRouter(tags=["health-indicators"])
 

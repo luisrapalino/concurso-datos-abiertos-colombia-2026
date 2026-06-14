@@ -13,7 +13,12 @@ def init_engine(database_url: str) -> None:
     if _engine is not None:
         return
     _engine = create_engine(database_url, pool_pre_ping=True)
-    _session_factory = sessionmaker(bind=_engine, autoflush=False, autocommit=False, expire_on_commit=False)
+    _session_factory = sessionmaker(
+        bind=_engine,
+        autoflush=False,
+        autocommit=False,
+        expire_on_commit=False,
+    )
 
 
 def dispose_engine() -> None:
@@ -33,7 +38,10 @@ def get_engine() -> Engine:
 
 def get_session() -> Generator[Session, None, None]:
     if _session_factory is None:
-        msg = "Database session factory is not initialized. Call init_engine() during application startup."
+        msg = (
+            "Database session factory is not initialized. "
+            "Call init_engine() during application startup."
+        )
         raise RuntimeError(msg)
     session = _session_factory()
     try:
