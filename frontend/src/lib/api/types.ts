@@ -28,6 +28,25 @@ export interface TerritorialRiskMapPoint {
   longitude: number;
 }
 
+export interface DataDrift {
+  definition_id: string;
+  latest_period: string | null;
+  previous_period: string | null;
+  latest_observation_count: number;
+  previous_observation_count: number;
+  observation_count_delta: number;
+  latest_mean_value: number | null;
+  previous_mean_value: number | null;
+  mean_value_delta: number | null;
+  drift_status: "stable" | "warning" | "alert" | "unknown";
+  drift_note: string;
+}
+
+export interface GeoFeatureCollection {
+  type: "FeatureCollection";
+  features: Array<Record<string, unknown>>;
+}
+
 export interface HealthIndicator {
   id: string;
   definition_id: string;

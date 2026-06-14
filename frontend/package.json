@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:e2e": "playwright test",
+    "generate:api-types": "openapi-typescript ../openapi/openapi.json -o src/lib/api/openapi.d.ts"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
@@ -23,6 +25,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
@@ -30,6 +33,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "openapi-typescript": "^7.9.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

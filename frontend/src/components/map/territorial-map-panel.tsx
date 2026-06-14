@@ -8,7 +8,7 @@ import {
   LoadingState,
 } from "@/components/shared/api-state";
 import { epidemiologicalApi } from "@/lib/api/client";
-import type { RiskClassification, TerritorialRiskMapPoint } from "@/lib/api/types";
+import type { RiskClassification, TerritorialRiskMapPoint, GeoFeatureCollection } from "@/lib/api/types";
 import { useApiResource } from "@/hooks/use-api-resource";
 import { useTerritorialFilters } from "@/stores/territorial-filters";
 
@@ -24,6 +24,9 @@ const CircleMarker = dynamic(
   { ssr: false },
 );
 const Popup = dynamic(async () => (await import("react-leaflet")).Popup, { ssr: false });
+const GeoJSON = dynamic(async () => (await import("react-leaflet")).GeoJSON, {
+  ssr: false,
+});
 
 const classificationColors: Record<RiskClassification, string> = {
   low: "#059669",
@@ -33,23 +36,40 @@ const classificationColors: Record<RiskClassification, string> = {
 };
 
 function TerritorialMapContent({ period }: { period: string }) {
-  const { data, error, loading, reload } = useApiResource(
+  const {
+    data: points,
+    error: pointsError,
+    loading: pointsLoading,
+    reload: reloadPoints,
+  } = useApiResource(
     () => epidemiologicalApi.listTerritorialRiskMap({ period, limit: 200 }),
     [period],
   );
+  const {
+    data: boundaries,
+    error: boundariesError,
+    loading: boundariesLoading,
+  } = useApiResource(() => epidemiologicalApi.getTerritorialBoundaries("department"), []);
 
-  const points = useMemo(() => data ?? [], [data]);
+  const loading = pointsLoading || boundariesLoading;
+  const error = pointsError ?? boundariesError;
+
+  const boundaryData = useMemo(
+    () => boundaries as GeoFeatureCollection | null,
+    [boundaries],
+  );
 
   if (loading) return <LoadingState message="Construyendo mapa de riesgo..." />;
-  if (error) return <ErrorState message={error} onRetry={reload} />;
-  if (points.length === 0) {
+  if (error) return <ErrorState message={error} onRetry={reloadPoints} />;
+  if (!points || points.length === 0) {
     return <EmptyState message="No hay puntos territoriales para el periodo seleccionado." />;
   }
 
   return (
     <div className="space-y-3">
       <p className="text-sm text-[var(--muted-foreground)]">
-        {points.length} territorios con score de riesgo · centroides departamentales (MVP)
+        {points.length} municipios con score de riesgo · coordenadas DIVIPOLA · contorno
+        departamental DANE MGN 2018
       </p>
       <div className="h-[480px] overflow-hidden rounded-lg border border-[var(--border)]">
         <MapContainer
@@ -62,6 +82,17 @@ function TerritorialMapContent({ period }: { period: string }) {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          {boundaryData ? (
+            <GeoJSON
+              data={boundaryData}
+              style={() => ({
+                color: "#64748b",
+                weight: 1,
+                fillColor: "#e2e8f0",
+                fillOpacity: 0.15,
+              })}
+            />
+          ) : null}
           {points.map((point: TerritorialRiskMapPoint) => (
             <CircleMarker
               key={point.territorial_code}
@@ -70,7 +101,7 @@ function TerritorialMapContent({ period }: { period: string }) {
               pathOptions={{
                 color: classificationColors[point.classification],
                 fillColor: classificationColors[point.classification],
-                fillOpacity: 0.75,
+                fillOpacity: 0.85,
               }}
             >
               <Popup>

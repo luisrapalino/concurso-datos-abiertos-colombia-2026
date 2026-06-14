@@ -1,6 +1,8 @@
 import type {
   AnomalyAlertPage,
+  DataDrift,
   DataFreshness,
+  GeoFeatureCollection,
   HealthIndicator,
   Insight,
   RiskScore,
@@ -117,6 +119,18 @@ export const epidemiologicalApi = {
   listTerritorialRiskMap(params: { period: string; limit?: number }) {
     return fetchJson<TerritorialRiskMapPoint[]>(
       buildApiUrl("/territorial-risk-map", params),
+    );
+  },
+
+  getTerritorialBoundaries(level = "department") {
+    return fetchJson<GeoFeatureCollection>(
+      buildApiUrl("/territorial-boundaries", { level }),
+    );
+  },
+
+  getDataDrift(definitionId = "general-mortality-rate") {
+    return fetchJson<DataDrift>(
+      buildApiUrl("/data-drift", { definition_id: definitionId }),
     );
   },
 };
