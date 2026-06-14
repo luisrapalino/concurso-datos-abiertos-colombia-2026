@@ -1,53 +1,38 @@
-from datetime import date
-
 from modules.anomaly_detection.application.dto import (
     AnomalyAlertPageDto,
     AnomalyAlertReadDto,
-    AnomalySeverity,
     ListAnomaliesQueryDto,
 )
+from modules.anomaly_detection.domain.detection import AnomalyAlert, evaluate_observation
+from modules.anomaly_detection.domain.repositories import CuratedObservationsReader
+from modules.territorial_risk.domain.risk_score import GENERAL_MORTALITY_DEFINITION_ID
 from shared.pagination import PaginatedResponse
 
 
 class ListAnomaliesUseCase:
-    """Returns stub anomaly alerts until detection pipelines are wired."""
+    """Detects territorial anomalies from curated mortality observations."""
 
-    _STUB_ALERTS: tuple[AnomalyAlertReadDto, ...] = (
-        AnomalyAlertReadDto(
-            id="stub-anomaly-001",
-            territorial_code="05",
-            indicator_id="stub-mortality-rate",
-            indicator_name="Crude mortality rate (placeholder)",
-            detected_on=date(2024, 3, 15),
-            severity=AnomalySeverity.MEDIUM,
-            description="Observed rate exceeds rolling 8-week baseline (stub).",
-            baseline_value=12.4,
-            observed_value=18.9,
-        ),
-        AnomalyAlertReadDto(
-            id="stub-anomaly-002",
-            territorial_code="05001",
-            indicator_id="stub-mortality-rate",
-            indicator_name="Crude mortality rate (placeholder)",
-            detected_on=date(2024, 4, 2),
-            severity=AnomalySeverity.HIGH,
-            description="Sudden week-over-week increase flagged for manual review (stub).",
-            baseline_value=10.1,
-            observed_value=21.3,
-        ),
-    )
+    def __init__(self, reader: CuratedObservationsReader) -> None:
+        self._reader = reader
 
     def execute(self, query: ListAnomaliesQueryDto) -> AnomalyAlertPageDto:
-        filtered = [
+        territorial_code = str(query.territorial_code) if query.territorial_code else None
+        observations = self._reader.list_observations_with_period_median(
+            GENERAL_MORTALITY_DEFINITION_ID,
+            territorial_code=territorial_code,
+        )
+
+        alerts = [
             alert
-            for alert in self._STUB_ALERTS
-            if query.territorial_code is None or alert.territorial_code == query.territorial_code
+            for observation in observations
+            if (alert := evaluate_observation(observation)) is not None
         ]
+
         page = PaginatedResponse.from_items(
-            filtered,
+            [_to_dto(alert) for alert in alerts],
             page=query.page,
             page_size=query.page_size,
-            total_items=len(filtered),
+            total_items=len(alerts),
         )
         return AnomalyAlertPageDto(
             items=page.items,
@@ -56,3 +41,17 @@ class ListAnomaliesUseCase:
             total_items=page.total_items,
             total_pages=page.total_pages,
         )
+
+
+def _to_dto(alert: AnomalyAlert) -> AnomalyAlertReadDto:
+    return AnomalyAlertReadDto(
+        id=alert.id,
+        territorial_code=alert.territorial_code,
+        indicator_id=alert.indicator_id,
+        indicator_name=alert.indicator_name,
+        detected_on=alert.detected_on,
+        severity=alert.severity,
+        description=alert.description,
+        baseline_value=alert.baseline_value,
+        observed_value=alert.observed_value,
+    )
