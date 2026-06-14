@@ -1,6 +1,14 @@
 from fastapi import APIRouter
 
+from modules.anomaly_detection.interfaces.router import router as anomalies_router
 from modules.health_indicators.interfaces.router import router as health_indicators_router
+from modules.insights_generation.interfaces.router import router as insights_router
+from modules.prediction_engine.interfaces.router import router as territorial_trends_router
+from modules.territorial_risk.interfaces.router import router as predict_risk_router
 
 api_v1_router = APIRouter()
 api_v1_router.include_router(health_indicators_router)
+api_v1_router.include_router(predict_risk_router)
+api_v1_router.include_router(anomalies_router)
+api_v1_router.include_router(territorial_trends_router)
+api_v1_router.include_router(insights_router)
