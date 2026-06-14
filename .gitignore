@@ -1,5 +1,6 @@
 .env
 docker-compose.override.yml
+backups/
 .venv/
 venv/
 __pycache__/
