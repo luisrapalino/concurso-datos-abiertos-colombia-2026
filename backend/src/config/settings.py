@@ -8,6 +8,9 @@ class Settings(BaseSettings):
 
     database_url: str
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    log_json: bool = False
+    rate_limit_enabled: bool = True
+    rate_limit_per_minute: int = 120
 
     @property
     def cors_origin_list(self) -> list[str]:
