@@ -18,8 +18,11 @@ src_path = backend_root / "src"
 sys.path.insert(0, str(src_path))
 
 from infrastructure.persistence.base import Base  # noqa: E402
-from modules.health_indicators.infrastructure.persistence.orm_models import (  # noqa: E402, F401
-    HealthIndicatorRow,
+from modules.epidemiological_surveillance.infrastructure.persistence.orm_models import (  # noqa: E402, F401
+    DataSourceRow,
+    HealthIndicatorDefinitionRow,
+    HealthIndicatorObservationRow,
+    IngestionRunRow,
 )
 
 database_url = os.environ.get("DATABASE_URL")
