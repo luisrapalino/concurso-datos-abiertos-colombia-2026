@@ -1,6 +1,8 @@
 import os
 
 import pytest
+from alembic import command
+from alembic.config import Config
 from fastapi.testclient import TestClient
 
 from api.main import create_app
@@ -33,6 +35,13 @@ def seeded_database(database_url: str) -> None:
     os.environ["DATABASE_URL"] = database_url
     get_settings.cache_clear()
     init_engine(database_url)
+
+    backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    alembic_cfg = Config(os.path.join(backend_root, "alembic.ini"))
+    alembic_cfg.set_main_option("sqlalchemy.url", database_url)
+    alembic_cfg.set_main_option("script_location", os.path.join(backend_root, "alembic"))
+    command.upgrade(alembic_cfg, "head")
+
     session_gen = get_session()
     session = next(session_gen)
     try:
