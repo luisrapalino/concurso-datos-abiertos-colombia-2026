@@ -22,9 +22,22 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://epintel:epintel@db:5432/epintel
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
     depends_on:
       db:
         condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        API_INTERNAL_URL: http://api:8000
+    ports:
+      - "3000:3000"
+    environment:
+      API_INTERNAL_URL: http://api:8000
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
