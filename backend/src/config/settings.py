@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     ingestion_default_years: str = "2018,2019,2020"
     ingestion_default_limit: int = 15000
     ingestion_validate_territorial_codes: bool = True
+    ml_artifacts_dir: Path | None = None
 
     @property
     def cors_origin_list(self) -> list[str]:

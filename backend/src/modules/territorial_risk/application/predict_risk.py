@@ -1,12 +1,20 @@
 from datetime import UTC, datetime
 
+from modules.territorial_risk.application.compute_territorial_risk import (
+    compute_territorial_risk_score,
+)
 from modules.territorial_risk.application.dto import PredictRiskQueryDto, RiskScoreReadDto
+from modules.territorial_risk.application.ports.promoted_risk_model_port import (
+    PromotedRiskModelPort,
+)
 from modules.territorial_risk.domain.repositories import (
     RiskScoreRepository,
     TerritorialRiskDataPort,
 )
 from modules.territorial_risk.domain.risk_score import GENERAL_MORTALITY_DEFINITION_ID, RiskScore
-from modules.territorial_risk.domain.scoring import compute_relative_mortality_score
+from modules.territorial_risk.infrastructure.ml.file_promoted_model_adapter import (
+    NullPromotedRiskModelAdapter,
+)
 from shared.exceptions import EntityNotFoundError
 
 
@@ -17,19 +25,22 @@ class PredictRiskUseCase:
         self,
         data_port: TerritorialRiskDataPort,
         risk_score_repository: RiskScoreRepository,
+        promoted_model: PromotedRiskModelPort | None = None,
     ) -> None:
         self._data_port = data_port
         self._risk_score_repository = risk_score_repository
+        self._promoted_model = promoted_model or NullPromotedRiskModelAdapter()
 
     def execute(self, query: PredictRiskQueryDto) -> RiskScoreReadDto:
         territorial_code = str(query.territorial_code)
         period = str(query.period)
+        model_version = _current_model_version(self._promoted_model)
 
         cached = self._risk_score_repository.get(
             territorial_code=territorial_code,
             period=period,
             definition_id=GENERAL_MORTALITY_DEFINITION_ID,
-            model_version=_current_model_version(),
+            model_version=model_version,
         )
         if cached is not None and cached.feature_contributions:
             return _to_dto(cached, persisted=True)
@@ -45,19 +56,21 @@ class PredictRiskUseCase:
         if national_median is None:
             raise EntityNotFoundError("national_mortality_baseline", period)
 
-        risk_score = compute_relative_mortality_score(
+        risk_score = compute_territorial_risk_score(
             observation,
             national_median=national_median,
             generated_at=datetime.now(tz=UTC),
+            promoted_model=self._promoted_model,
         )
         self._risk_score_repository.save(risk_score)
         return _to_dto(risk_score, persisted=True)
 
 
-def _current_model_version() -> str:
+def _current_model_version(promoted_model: PromotedRiskModelPort) -> str:
     from modules.territorial_risk.domain.risk_score import RULES_VERSION
 
-    return RULES_VERSION
+    active_version = promoted_model.active_model_version()
+    return active_version or RULES_VERSION
 
 
 def _to_dto(risk_score: RiskScore, *, persisted: bool) -> RiskScoreReadDto:

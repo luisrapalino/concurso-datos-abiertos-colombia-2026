@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from api.deps import get_db_session
+from config.settings import get_settings
 from modules.territorial_risk.application.dto import (
     PredictRiskQueryDto,
     RiskScoreReadDto,
@@ -14,6 +15,9 @@ from modules.territorial_risk.application.list_territorial_risk_map import (
     ListTerritorialRiskMapUseCase,
 )
 from modules.territorial_risk.application.predict_risk import PredictRiskUseCase
+from modules.territorial_risk.infrastructure.ml.file_promoted_model_adapter import (
+    FilePromotedRiskModelAdapter,
+)
 from modules.territorial_risk.infrastructure.persistence.risk_score_repository import (
     SqlAlchemyRiskScoreRepository,
 )
@@ -29,7 +33,8 @@ def get_predict_risk_use_case(
 ) -> PredictRiskUseCase:
     data_port = SqlAlchemyTerritorialRiskDataAdapter(session)
     repository = SqlAlchemyRiskScoreRepository(session)
-    return PredictRiskUseCase(data_port, repository)
+    promoted_model = FilePromotedRiskModelAdapter(get_settings())
+    return PredictRiskUseCase(data_port, repository, promoted_model)
 
 
 def get_territorial_risk_map_use_case(
