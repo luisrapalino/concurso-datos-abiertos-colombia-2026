@@ -1,11 +1,18 @@
 from dataclasses import dataclass
+from datetime import datetime
+from decimal import Decimal
 
 
 @dataclass(frozen=True, slots=True)
 class HealthIndicator:
-    """Territorial health indicator definition (domain entity)."""
+    """Curated territorial health indicator observation."""
 
     id: str
+    definition_id: str
     name: str
-    territorial_code: str | None
-    measurement_unit: str | None
+    territorial_code: str
+    period: str
+    value: Decimal
+    measurement_unit: str
+    source_id: str
+    ingested_at: datetime | None
