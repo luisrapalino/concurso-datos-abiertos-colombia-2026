@@ -19,6 +19,12 @@ PYTHONPATH=src python -m modules.epidemiological_surveillance.interfaces.cli ing
   datos-gov-mortality-indicators --years 2018,2019,2020 --limit 15000
 ```
 
+Los códigos municipales se validan contra el catálogo DANE DIVIPOLA embebido (`backend/data/`). Worker programado:
+
+```bash
+docker compose up -d ingestion-worker
+```
+
 `DATABASE_URL` debe usar el driver **psycopg v3**, por ejemplo `postgresql+psycopg://epintel:epintel@db:5432/epintel` (ya definido en `docker-compose.yml` para el servicio `api`).
 
 ## Desarrollo local del backend (sin reconstruir imagen)

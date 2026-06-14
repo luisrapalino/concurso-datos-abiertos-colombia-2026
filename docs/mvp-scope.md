@@ -23,7 +23,7 @@ Entregar un **vertical slice** de inteligencia epidemiológica territorial: dato
 | Prioridad | Fuente | Uso en MVP |
 |-----------|--------|------------|
 | 1 | [Indicadores mortalidad y morbilidad](https://www.datos.gov.co/Salud-y-Protecci-n-Social/Indicadores-mortalidad-y-morbilidad-seg-n-departam/4e4i-ua65) (INS / datos.gov.co) | Primera ingestión real: `TASA DE MORTALIDAD GENERAL` |
-| 2 | División político-administrativa DANE | Validación de códigos territoriales (fase posterior) |
+| 2 | División político-administrativa DANE | Validación de códigos territoriales en ingestión (catálogo DIVIPOLA embebido) |
 | 3 | SIVIGILA event-level | Ampliación post-MVP |
 
 ## Significado operativo de “riesgo”
