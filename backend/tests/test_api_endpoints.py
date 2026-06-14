@@ -114,6 +114,8 @@ def test_data_quality_endpoint(client) -> None:
     assert payload["total_observations"] >= 1
     assert payload["distinct_territories"] >= 1
     assert "temporal_coverage_note" in payload
+    assert payload["territorial_catalog"]["source_id"] == "dane-divipola"
+    assert payload["territorial_catalog"]["municipality_count"] >= 1000
 
 
 @pytest.mark.integration

@@ -11,6 +11,7 @@ class IngestMortalityIndicatorsCommand:
     years: tuple[int, ...] | None = None
     limit: int = 5000
     dry_run: bool = False
+    validate_territorial_codes: bool = True
 
 
 def annual_period(year: int) -> str:

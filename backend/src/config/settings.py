@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -11,6 +12,12 @@ class Settings(BaseSettings):
     log_json: bool = False
     rate_limit_enabled: bool = True
     rate_limit_per_minute: int = 120
+    divipola_catalog_path: Path | None = None
+    ingestion_schedule_enabled: bool = False
+    ingestion_interval_hours: int = 24
+    ingestion_default_years: str = "2018,2019,2020"
+    ingestion_default_limit: int = 15000
+    ingestion_validate_territorial_codes: bool = True
 
     @property
     def cors_origin_list(self) -> list[str]:

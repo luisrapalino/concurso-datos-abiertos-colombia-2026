@@ -20,6 +20,7 @@ from modules.epidemiological_surveillance.infrastructure.persistence.sqlalchemy_
 from modules.epidemiological_surveillance.infrastructure.sources.datos_gov_co_client import (
     DatosGovCoMortalityClient,
 )
+from shared.divipola_catalog import DivipolaCatalog
 
 
 @pytest.fixture(scope="session")
@@ -48,6 +49,7 @@ def seeded_database(database_url: str) -> None:
         use_case = IngestMortalityIndicatorsUseCase(
             source_client=DatosGovCoMortalityClient(),
             repository=SqlAlchemyIngestionRepository(session),
+            territorial_catalog=DivipolaCatalog.from_file(),
         )
         use_case.execute(
             IngestMortalityIndicatorsCommand(

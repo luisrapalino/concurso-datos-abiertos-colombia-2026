@@ -20,6 +20,7 @@ from modules.epidemiological_surveillance.infrastructure.sources.datos_gov_co_cl
     GENERAL_MORTALITY_INDICATOR,
     DatosGovCoMortalityClient,
 )
+from shared.divipola_catalog import DivipolaCatalog
 
 SOURCE_DATOS_GOV_MORTALITY = "datos-gov-mortality-indicators"
 DEFINITION_GENERAL_MORTALITY = "general-mortality-rate"
@@ -61,6 +62,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Fetch and count records without writing to the database",
     )
+    ingest_parser.add_argument(
+        "--skip-territorial-validation",
+        action="store_true",
+        help="Skip DANE DIVIPOLA municipality code validation",
+    )
     return parser
 
 
@@ -79,6 +85,9 @@ def run_ingest(args: argparse.Namespace) -> int:
     years = _parse_years(args.years)
     settings = get_settings()
     init_engine(settings.database_url)
+    catalog = None if args.skip_territorial_validation else DivipolaCatalog.from_file(
+        settings.divipola_catalog_path,
+    )
     session_gen = get_session()
     session = next(session_gen)
     try:
@@ -87,6 +96,7 @@ def run_ingest(args: argparse.Namespace) -> int:
                 source_indicator_key=registry["source_indicator_key"],
             ),
             repository=SqlAlchemyIngestionRepository(session),
+            territorial_catalog=catalog,
         )
         result = use_case.execute(
             IngestMortalityIndicatorsCommand(
@@ -97,14 +107,20 @@ def run_ingest(args: argparse.Namespace) -> int:
                 years=years,
                 limit=args.limit,
                 dry_run=args.dry_run,
+                validate_territorial_codes=not args.skip_territorial_validation,
             ),
         )
     finally:
         session_gen.close()
         dispose_engine()
 
+    rejected_codes = ",".join(result.rejected_territorial_codes) or "-"
     print(
-        f"Ingestion completed: run_id={result.run_id} records_upserted={result.records_upserted}",
+        "Ingestion completed: "
+        f"run_id={result.run_id} "
+        f"records_upserted={result.records_upserted} "
+        f"records_rejected={result.records_rejected} "
+        f"rejected_codes={rejected_codes}",
     )
     return 0
 

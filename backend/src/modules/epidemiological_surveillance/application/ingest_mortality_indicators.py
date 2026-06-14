@@ -1,12 +1,16 @@
 from modules.epidemiological_surveillance.application.normalization import (
     IngestMortalityIndicatorsCommand,
 )
+from modules.epidemiological_surveillance.application.validate_territorial_records import (
+    partition_records_by_catalog,
+)
 from modules.epidemiological_surveillance.domain.records import RawMortalityIndicatorRecord
 from modules.epidemiological_surveillance.domain.repositories import (
     IngestionRepository,
     IngestionResult,
     MortalityIndicatorsSourceClient,
 )
+from shared.divipola_catalog import TerritorialCatalog, TerritorialValidationSummary
 
 
 class IngestMortalityIndicatorsUseCase:
@@ -16,18 +20,27 @@ class IngestMortalityIndicatorsUseCase:
         self,
         source_client: MortalityIndicatorsSourceClient,
         repository: IngestionRepository,
+        *,
+        territorial_catalog: TerritorialCatalog | None = None,
     ) -> None:
         self._source_client = source_client
         self._repository = repository
+        self._territorial_catalog = territorial_catalog
 
     def execute(self, command: IngestMortalityIndicatorsCommand) -> IngestionResult:
+        records = self._fetch_all(command)
+        records, validation_summary = self._apply_territorial_validation(command, records)
+
         if command.dry_run:
-            records = self._fetch_all(command)
-            return IngestionResult(run_id="dry-run", records_upserted=len(records))
+            return IngestionResult(
+                run_id="dry-run",
+                records_upserted=len(records),
+                records_rejected=validation_summary.rejected_count,
+                rejected_territorial_codes=validation_summary.rejected_territorial_codes,
+            )
 
         run_id = self._repository.begin_run(command.source_id)
         try:
-            records = self._fetch_all(command)
             upserted = self._repository.upsert_observations(
                 run_id=run_id,
                 source_id=command.source_id,
@@ -39,7 +52,25 @@ class IngestMortalityIndicatorsUseCase:
             self._repository.fail_run(run_id, str(exc))
             raise
 
-        return IngestionResult(run_id=run_id, records_upserted=upserted)
+        return IngestionResult(
+            run_id=run_id,
+            records_upserted=upserted,
+            records_rejected=validation_summary.rejected_count,
+            rejected_territorial_codes=validation_summary.rejected_territorial_codes,
+        )
+
+    def _apply_territorial_validation(
+        self,
+        command: IngestMortalityIndicatorsCommand,
+        records: list[RawMortalityIndicatorRecord],
+    ) -> tuple[list[RawMortalityIndicatorRecord], TerritorialValidationSummary]:
+        if not command.validate_territorial_codes or self._territorial_catalog is None:
+            return records, TerritorialValidationSummary(
+                accepted_count=len(records),
+                rejected_count=0,
+                rejected_territorial_codes=(),
+            )
+        return partition_records_by_catalog(records, self._territorial_catalog)
 
     def _fetch_all(
         self,

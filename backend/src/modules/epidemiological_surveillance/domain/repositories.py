@@ -8,6 +8,8 @@ from modules.epidemiological_surveillance.domain.records import RawMortalityIndi
 class IngestionResult:
     run_id: str
     records_upserted: int
+    records_rejected: int = 0
+    rejected_territorial_codes: tuple[str, ...] = ()
 
 
 class MortalityIndicatorsSourceClient(Protocol):

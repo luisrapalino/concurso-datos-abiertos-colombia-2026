@@ -5,6 +5,12 @@ from pydantic import BaseModel, Field
 from shared.period import Period
 
 
+class TerritorialCatalogMetadataDto(BaseModel):
+    source_id: str
+    synced_at: datetime | None = None
+    municipality_count: int
+
+
 class DataFreshnessReadDto(BaseModel):
     source_id: str
     source_name: str
@@ -24,3 +30,4 @@ class DataQualityReadDto(BaseModel):
     periods_available: list[Period]
     latest_ingestion_at: datetime | None = None
     temporal_coverage_note: str
+    territorial_catalog: TerritorialCatalogMetadataDto
