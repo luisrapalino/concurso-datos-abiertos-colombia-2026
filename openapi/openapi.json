@@ -1,0 +1,1418 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Territorial Epidemiological Intelligence API",
+    "description": "REST API for territorial epidemiological indicators, risk, anomalies, and insights.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "operations"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": [
+          "operations"
+        ],
+        "summary": "Metrics",
+        "operationId": "metrics_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health-indicators": {
+      "get": {
+        "tags": [
+          "health-indicators"
+        ],
+        "summary": "List Health Indicators",
+        "operationId": "list_health_indicators_api_v1_health_indicators_get",
+        "parameters": [
+          {
+            "name": "territorial_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Territorial Code"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Period"
+            }
+          },
+          {
+            "name": "definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Definition Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HealthIndicatorReadDto"
+                  },
+                  "title": "Response List Health Indicators Api V1 Health Indicators Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/data-freshness": {
+      "get": {
+        "tags": [
+          "data-freshness"
+        ],
+        "summary": "Get Data Freshness",
+        "operationId": "get_data_freshness_api_v1_data_freshness_get",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "default": "datos-gov-mortality-indicators",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataFreshnessReadDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/data-quality": {
+      "get": {
+        "tags": [
+          "data-freshness"
+        ],
+        "summary": "Get Data Quality",
+        "operationId": "get_data_quality_api_v1_data_quality_get",
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "default": "datos-gov-mortality-indicators",
+              "title": "Source Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQualityReadDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/data-drift": {
+      "get": {
+        "tags": [
+          "data-freshness"
+        ],
+        "summary": "Get Data Drift",
+        "operationId": "get_data_drift_api_v1_data_drift_get",
+        "parameters": [
+          {
+            "name": "definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "default": "general-mortality-rate",
+              "title": "Definition Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataDriftReadDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/territorial-boundaries": {
+      "get": {
+        "tags": [
+          "predict-risk"
+        ],
+        "summary": "Get Territorial Boundaries",
+        "operationId": "get_territorial_boundaries_api_v1_territorial_boundaries_get",
+        "parameters": [
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "default": "department",
+              "title": "Level"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Territorial Boundaries Api V1 Territorial Boundaries Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/predict-risk": {
+      "get": {
+        "tags": [
+          "predict-risk"
+        ],
+        "summary": "Predict Risk",
+        "operationId": "predict_risk_api_v1_predict_risk_get",
+        "parameters": [
+          {
+            "name": "territorial_code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Territorial Code"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Period"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskScoreReadDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/territorial-risk-map": {
+      "get": {
+        "tags": [
+          "predict-risk"
+        ],
+        "summary": "List Territorial Risk Map",
+        "operationId": "list_territorial_risk_map_api_v1_territorial_risk_map_get",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Period"
+            }
+          },
+          {
+            "name": "definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "default": "general-mortality-rate",
+              "title": "Definition Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 200,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TerritorialRiskMapPointDto"
+                  },
+                  "title": "Response List Territorial Risk Map Api V1 Territorial Risk Map Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/anomalies": {
+      "get": {
+        "tags": [
+          "anomalies"
+        ],
+        "summary": "List Anomalies",
+        "operationId": "list_anomalies_api_v1_anomalies_get",
+        "parameters": [
+          {
+            "name": "territorial_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Territorial Code"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnomalyAlertPageDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/territorial-trends": {
+      "get": {
+        "tags": [
+          "territorial-trends"
+        ],
+        "summary": "Get Territorial Trends",
+        "operationId": "get_territorial_trends_api_v1_territorial_trends_get",
+        "parameters": [
+          {
+            "name": "territorial_code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Territorial Code"
+            }
+          },
+          {
+            "name": "indicator_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "default": "general-mortality-rate",
+              "title": "Indicator Id"
+            }
+          },
+          {
+            "name": "horizon_weeks",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 12,
+              "minimum": 1,
+              "default": 4,
+              "title": "Horizon Weeks"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TerritorialTrendReadDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/insights": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "List Insights",
+        "operationId": "list_insights_api_v1_insights_get",
+        "parameters": [
+          {
+            "name": "territorial_code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Territorial Code"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 5,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InsightReadDto"
+                  },
+                  "title": "Response List Insights Api V1 Insights Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnomalyAlertPageDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AnomalyAlertReadDto"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "total_items": {
+            "type": "integer",
+            "title": "Total Items"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "Total Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total_items",
+          "total_pages"
+        ],
+        "title": "AnomalyAlertPageDto"
+      },
+      "AnomalyAlertReadDto": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "territorial_code": {
+            "type": "string",
+            "title": "Territorial Code"
+          },
+          "indicator_id": {
+            "type": "string",
+            "title": "Indicator Id"
+          },
+          "indicator_name": {
+            "type": "string",
+            "title": "Indicator Name"
+          },
+          "detected_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Detected On"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/AnomalySeverity"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "baseline_value": {
+            "type": "number",
+            "title": "Baseline Value"
+          },
+          "observed_value": {
+            "type": "number",
+            "title": "Observed Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "territorial_code",
+          "indicator_id",
+          "indicator_name",
+          "detected_on",
+          "severity",
+          "description",
+          "baseline_value",
+          "observed_value"
+        ],
+        "title": "AnomalyAlertReadDto"
+      },
+      "AnomalySeverity": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "AnomalySeverity"
+      },
+      "DataDriftReadDto": {
+        "properties": {
+          "definition_id": {
+            "type": "string",
+            "title": "Definition Id"
+          },
+          "latest_period": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Period"
+          },
+          "previous_period": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Period"
+          },
+          "latest_observation_count": {
+            "type": "integer",
+            "title": "Latest Observation Count"
+          },
+          "previous_observation_count": {
+            "type": "integer",
+            "title": "Previous Observation Count"
+          },
+          "observation_count_delta": {
+            "type": "integer",
+            "title": "Observation Count Delta"
+          },
+          "latest_mean_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Mean Value"
+          },
+          "previous_mean_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Mean Value"
+          },
+          "mean_value_delta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean Value Delta"
+          },
+          "drift_status": {
+            "type": "string",
+            "title": "Drift Status"
+          },
+          "drift_note": {
+            "type": "string",
+            "title": "Drift Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "definition_id",
+          "latest_observation_count",
+          "previous_observation_count",
+          "observation_count_delta",
+          "drift_status",
+          "drift_note"
+        ],
+        "title": "DataDriftReadDto"
+      },
+      "DataFreshnessReadDto": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name"
+          },
+          "last_successful_ingestion_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Successful Ingestion At"
+          },
+          "records_upserted": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Records Upserted"
+          },
+          "latest_period_available": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Period Available"
+          },
+          "coverage_note": {
+            "type": "string",
+            "title": "Coverage Note",
+            "default": "Coverage depends on published open data; gaps must be interpreted cautiously."
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "source_name"
+        ],
+        "title": "DataFreshnessReadDto"
+      },
+      "DataQualityReadDto": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "total_observations": {
+            "type": "integer",
+            "title": "Total Observations"
+          },
+          "distinct_territories": {
+            "type": "integer",
+            "title": "Distinct Territories"
+          },
+          "distinct_periods": {
+            "type": "integer",
+            "title": "Distinct Periods"
+          },
+          "periods_available": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Periods Available"
+          },
+          "latest_ingestion_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Ingestion At"
+          },
+          "temporal_coverage_note": {
+            "type": "string",
+            "title": "Temporal Coverage Note"
+          },
+          "territorial_catalog": {
+            "$ref": "#/components/schemas/TerritorialCatalogMetadataDto"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "total_observations",
+          "distinct_territories",
+          "distinct_periods",
+          "periods_available",
+          "temporal_coverage_note",
+          "territorial_catalog"
+        ],
+        "title": "DataQualityReadDto"
+      },
+      "FeatureContributionReadDto": {
+        "properties": {
+          "feature": {
+            "type": "string",
+            "title": "Feature"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "contribution": {
+            "type": "number",
+            "title": "Contribution"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "feature",
+          "value",
+          "contribution",
+          "description"
+        ],
+        "title": "FeatureContributionReadDto"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthIndicatorReadDto": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Stable identifier for the territorial observation."
+          },
+          "definition_id": {
+            "type": "string",
+            "title": "Definition Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "territorial_code": {
+            "type": "string",
+            "title": "Territorial Code"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "measurement_unit": {
+            "type": "string",
+            "title": "Measurement Unit"
+          },
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "ingested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ingested At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "definition_id",
+          "name",
+          "territorial_code",
+          "period",
+          "value",
+          "measurement_unit",
+          "source_id"
+        ],
+        "title": "HealthIndicatorReadDto"
+      },
+      "InsightConfidence": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "InsightConfidence"
+      },
+      "InsightReadDto": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "territorial_code": {
+            "type": "string",
+            "title": "Territorial Code"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "narrative": {
+            "type": "string",
+            "title": "Narrative"
+          },
+          "confidence": {
+            "$ref": "#/components/schemas/InsightConfidence"
+          },
+          "data_version": {
+            "type": "string",
+            "title": "Data Version"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources"
+          },
+          "analysis_period": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analysis Period"
+          },
+          "system_context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Context",
+            "description": "Explains data window, models and limits of the narrative."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "territorial_code",
+          "title",
+          "narrative",
+          "confidence",
+          "data_version",
+          "sources"
+        ],
+        "title": "InsightReadDto"
+      },
+      "RiskClassification": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ],
+        "title": "RiskClassification"
+      },
+      "RiskScoreReadDto": {
+        "properties": {
+          "territorial_code": {
+            "type": "string",
+            "title": "Territorial Code"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "description": "Normalized territorial risk score."
+          },
+          "classification": {
+            "$ref": "#/components/schemas/RiskClassification"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "indicator_definition_id": {
+            "type": "string",
+            "title": "Indicator Definition Id"
+          },
+          "observed_value": {
+            "type": "number",
+            "title": "Observed Value"
+          },
+          "baseline_value": {
+            "type": "number",
+            "title": "Baseline Value"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "drivers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Drivers"
+          },
+          "feature_contributions": {
+            "items": {
+              "$ref": "#/components/schemas/FeatureContributionReadDto"
+            },
+            "type": "array",
+            "title": "Feature Contributions"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "persisted": {
+            "type": "boolean",
+            "title": "Persisted",
+            "description": "Whether the score is stored for audit and map views.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "territorial_code",
+          "period",
+          "score",
+          "classification",
+          "model_version",
+          "indicator_definition_id",
+          "observed_value",
+          "baseline_value",
+          "assumptions",
+          "drivers",
+          "feature_contributions",
+          "generated_at"
+        ],
+        "title": "RiskScoreReadDto"
+      },
+      "TerritorialCatalogMetadataDto": {
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "title": "Source Id"
+          },
+          "synced_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Synced At"
+          },
+          "municipality_count": {
+            "type": "integer",
+            "title": "Municipality Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_id",
+          "municipality_count"
+        ],
+        "title": "TerritorialCatalogMetadataDto"
+      },
+      "TerritorialRiskMapPointDto": {
+        "properties": {
+          "territorial_code": {
+            "type": "string",
+            "title": "Territorial Code"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/RiskClassification"
+          },
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          }
+        },
+        "type": "object",
+        "required": [
+          "territorial_code",
+          "period",
+          "score",
+          "classification",
+          "latitude",
+          "longitude"
+        ],
+        "title": "TerritorialRiskMapPointDto"
+      },
+      "TerritorialTrendReadDto": {
+        "properties": {
+          "territorial_code": {
+            "type": "string",
+            "title": "Territorial Code"
+          },
+          "indicator_id": {
+            "type": "string",
+            "title": "Indicator Id"
+          },
+          "indicator_name": {
+            "type": "string",
+            "title": "Indicator Name"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/TrendPointDto"
+            },
+            "type": "array",
+            "title": "Points"
+          },
+          "forecast_horizon_weeks": {
+            "type": "integer",
+            "title": "Forecast Horizon Weeks"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "territorial_code",
+          "indicator_id",
+          "indicator_name",
+          "points",
+          "forecast_horizon_weeks",
+          "model_version"
+        ],
+        "title": "TerritorialTrendReadDto"
+      },
+      "TrendPointDto": {
+        "properties": {
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TrendPointKind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "value",
+          "kind"
+        ],
+        "title": "TrendPointDto"
+      },
+      "TrendPointKind": {
+        "type": "string",
+        "enum": [
+          "historical",
+          "forecast"
+        ],
+        "title": "TrendPointKind"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

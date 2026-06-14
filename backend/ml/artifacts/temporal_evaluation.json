@@ -1,0 +1,14 @@
+{
+  "evaluated_at": "2026-06-14T23:25:12.421164+00:00",
+  "strategy": "80/20 holdout on synthetic aligned panel",
+  "features": [
+    "observed_mortality_rate",
+    "national_median",
+    "mortality_ratio"
+  ],
+  "metrics": {
+    "holdout_mae": 3.881,
+    "holdout_samples": 39
+  },
+  "notes": "Replace synthetic panel with curated PostgreSQL periods for institutional evaluation."
+}
