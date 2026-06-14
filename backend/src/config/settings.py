@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     ingestion_default_limit: int = 15000
     ingestion_validate_territorial_codes: bool = True
     ml_artifacts_dir: Path | None = None
+    geojson_data_dir: Path | None = None
 
     @property
     def cors_origin_list(self) -> list[str]:

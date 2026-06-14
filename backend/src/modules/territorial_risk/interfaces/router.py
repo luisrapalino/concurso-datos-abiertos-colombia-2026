@@ -11,6 +11,9 @@ from modules.territorial_risk.application.dto import (
     TerritorialRiskMapPointDto,
     TerritorialRiskMapQueryDto,
 )
+from modules.territorial_risk.application.get_territorial_boundaries import (
+    GetTerritorialBoundariesUseCase,
+)
 from modules.territorial_risk.application.list_territorial_risk_map import (
     ListTerritorialRiskMapUseCase,
 )
@@ -43,6 +46,21 @@ def get_territorial_risk_map_use_case(
 ) -> ListTerritorialRiskMapUseCase:
     data_port = SqlAlchemyTerritorialRiskDataAdapter(session)
     return ListTerritorialRiskMapUseCase(data_port, predict_risk_use_case)
+
+
+def get_territorial_boundaries_use_case() -> GetTerritorialBoundariesUseCase:
+    return GetTerritorialBoundariesUseCase(get_settings())
+
+
+@router.get("/territorial-boundaries")
+def get_territorial_boundaries(
+    level: Annotated[str, Query(min_length=1)] = "department",
+    use_case: Annotated[
+        GetTerritorialBoundariesUseCase,
+        Depends(get_territorial_boundaries_use_case),
+    ] = ...,
+) -> dict[str, object]:
+    return use_case.execute(level=level)
 
 
 @router.get("/predict-risk", response_model=RiskScoreReadDto)
