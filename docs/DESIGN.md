@@ -37,4 +37,4 @@ Botones, tarjetas, badges e inputs viven en `frontend/src/components/ui/`.
 
 ## Mapas
 
-Leaflet con marcadores circulares coloreados por clasificación de riesgo; centroides departamentales en MVP.
+Leaflet con marcadores municipales (coordenadas DIVIPOLA), contornos departamentales GeoJSON (DANE MGN 2018) y color por clasificación de riesgo.

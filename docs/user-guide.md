@@ -17,7 +17,7 @@ Con Docker: `docker compose up --build` desde la raíz del repositorio.
 2. Selecciona **código territorial** (5 dígitos DANE, ej. `05001`) y **periodo** (`YYYY-01`).
 3. Recorre las vistas:
    - **Indicadores** — observaciones curadas.
-   - **Mapa** — distribución geográfica del score (centroides departamentales en MVP).
+   - **Mapa** — municipios DIVIPOLA con contornos departamentales DANE.
    - **Riesgo** — score explicable vs mediana nacional.
    - **Anomalías** — desviaciones respecto a la línea base del periodo.
    - **Tendencias** — histórico + proyección (Prophet o fallback lineal).
@@ -42,4 +42,4 @@ PYTHONPATH=src python -m modules.epidemiological_surveillance.interfaces.cli ing
   datos-gov-mortality-indicators --years 2018,2019,2020 --limit 15000
 ```
 
-Más detalle operativo: [`runbook-release.md`](runbook-release.md).
+Más detalle operativo: [`runbook-release.md`](runbook-release.md) y [`demo-guide.md`](demo-guide.md).
