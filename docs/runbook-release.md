@@ -21,11 +21,18 @@ Checklist para la fase 10 del roadmap.
 ## Rollback
 
 - API: revertir imagen Docker anterior y mantener migraciones compatibles hacia adelante.
-- Modelos: serving rule-based permanece canónico; experimentos ML viven en `backend/ml/artifacts/`.
+- Modelos ML:
+  ```bash
+  cd backend
+  PYTHONPATH=src python -m modules.territorial_risk.interfaces.ml_cli rollback
+  ```
+  Sin versión promovida, serving vuelve a `mortality-relative-v1.0.0` (rule-based).
 
 ## Etiquetado
 
 ```bash
-git tag -a v0.1.0-mvp -m "MVP institucional territorial"
-git push origin v0.1.0-mvp
+git tag -a v0.1.1-mvp -m "MVP + DIVIPOLA + SHAP serving + backups"
+git push origin v0.1.1-mvp
 ```
+
+Operación diaria: [`runbook-operations.md`](runbook-operations.md).

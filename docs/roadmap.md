@@ -15,10 +15,10 @@ Este documento describe las **fases** recomendadas hasta tener el proyecto **fun
 - **F0–F3:** MVP documentado, ingestión real datos.gov.co, validación DIVIPOLA en ingestión, worker programado Docker, API de indicadores.
 - **F4–F6:** Riesgo persistente y explicable, anomalías, tendencias (Prophet + fallback), insights narrativos con contexto de sistema.
 - **F7:** Frontend Next.js (indicadores, mapa Leaflet, riesgo, anomalías, tendencias, insights, frescura de datos).
-- **F8 (parcial):** script offline de experimento ML + `docs/ml-evaluation.md`.
-- **F9 (parcial):** structlog, `/metrics`, rate limit, `/data-quality`, headers de seguridad.
+- **F8 (parcial):** entrenamiento Ridge, registro de artefactos, promoción/rollback CLI, SHAP en serving.
+- **F9 (parcial):** structlog, `/metrics`, rate limit, `/data-quality`, headers de seguridad, scripts backup/restore Postgres.
 - **F10 (parcial):** `docs/user-guide.md`, `docs/architecture.md`, `docs/runbook-release.md`, `docs/DESIGN.md`.
-- **Pendiente:** release etiquetada en remoto, E2E Playwright, SHAP en serving, backups automatizados.
+- **Pendiente:** release etiquetada en remoto, E2E Playwright, evaluación temporal cruzada, drift automatizado.
 
 Ver también [`post-mvp-roadmap.md`](post-mvp-roadmap.md).
 

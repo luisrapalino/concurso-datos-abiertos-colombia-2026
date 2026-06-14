@@ -25,6 +25,31 @@ Los códigos municipales se validan contra el catálogo DANE DIVIPOLA embebido (
 docker compose up -d ingestion-worker
 ```
 
+## Modelos ML (riesgo territorial)
+
+Entrenar, promover y activar SHAP en serving:
+
+```bash
+cd backend
+PYTHONPATH=src python ml/train_mortality_experiment.py
+PYTHONPATH=src python -m modules.territorial_risk.interfaces.ml_cli promote ridge-mortality-risk-v1.0.0
+```
+
+Rollback al scoring rule-based:
+
+```bash
+PYTHONPATH=src python -m modules.territorial_risk.interfaces.ml_cli rollback
+```
+
+## Backups PostgreSQL
+
+```bash
+./scripts/backup-postgres.sh
+./scripts/verify-backup-restore.sh   # prueba periódica
+```
+
+Ver [`docs/runbook-operations.md`](docs/runbook-operations.md).
+
 `DATABASE_URL` debe usar el driver **psycopg v3**, por ejemplo `postgresql+psycopg://epintel:epintel@db:5432/epintel` (ya definido en `docker-compose.yml` para el servicio `api`).
 
 ## Desarrollo local del backend (sin reconstruir imagen)
