@@ -20,6 +20,7 @@ export function useApiResource<T>(
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
 
     loader()
       .then((result) => {

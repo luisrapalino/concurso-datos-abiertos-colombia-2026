@@ -1,6 +1,7 @@
 "use client";
 
-import { Badge, riskBadgeVariant } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
+import { riskBadgeVariant } from "@/lib/risk-badges";
 import {
   Card,
   CardContent,
@@ -14,15 +15,9 @@ import {
   LoadingState,
 } from "@/components/shared/api-state";
 import { epidemiologicalApi } from "@/lib/api/client";
+import { riskClassificationLabels } from "@/lib/domain-labels";
 import { useApiResource } from "@/hooks/use-api-resource";
 import { useTerritorialFilters } from "@/stores/territorial-filters";
-
-const classificationLabels: Record<string, string> = {
-  low: "Bajo",
-  medium: "Medio",
-  high: "Alto",
-  critical: "Crítico",
-};
 
 function RiskPanelContent({
   territorialCode,
@@ -36,9 +31,9 @@ function RiskPanelContent({
     [territorialCode, period],
   );
 
-  if (loading) return <LoadingState message="Calculando riesgo territorial..." />;
+  if (loading) return <LoadingState message="Calculando nivel de riesgo..." />;
   if (error) return <ErrorState message={error} onRetry={reload} />;
-  if (!risk) return <EmptyState message="Sin datos de riesgo disponibles." />;
+  if (!risk) return <EmptyState message="No hay datos de riesgo para este municipio y periodo." />;
 
   const drivers = risk.drivers ?? [];
   const assumptions = risk.assumptions ?? [];
@@ -48,9 +43,9 @@ function RiskPanelContent({
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Score de riesgo</CardTitle>
+          <CardTitle>Nivel de riesgo</CardTitle>
           <CardDescription>
-            Modelo {risk.model_version} · {risk.indicator_definition_id}
+            Escala de 0 a 100 · comparado con el promedio nacional del mismo periodo
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -59,16 +54,16 @@ function RiskPanelContent({
               {risk.score.toFixed(1)}
             </span>
             <Badge variant={riskBadgeVariant(risk.classification)}>
-              {classificationLabels[risk.classification] ?? risk.classification}
+              {riskClassificationLabels[risk.classification] ?? risk.classification}
             </Badge>
           </div>
           <dl className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <dt className="text-[var(--muted-foreground)]">Valor observado</dt>
+              <dt className="text-[var(--muted-foreground)]">Mortalidad en el municipio</dt>
               <dd className="font-medium tabular-nums">{risk.observed_value.toFixed(2)}</dd>
             </div>
             <div>
-              <dt className="text-[var(--muted-foreground)]">Línea base</dt>
+              <dt className="text-[var(--muted-foreground)]">Promedio nacional</dt>
               <dd className="font-medium tabular-nums">{risk.baseline_value.toFixed(2)}</dd>
             </div>
           </dl>
@@ -77,12 +72,12 @@ function RiskPanelContent({
 
       <Card>
         <CardHeader>
-          <CardTitle>Factores explicativos</CardTitle>
-          <CardDescription>Señales consideradas por el modelo explicable</CardDescription>
+          <CardTitle>¿Por qué este resultado?</CardTitle>
+          <CardDescription>Factores que el sistema tuvo en cuenta</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           <div>
-            <p className="mb-2 font-medium">Drivers</p>
+            <p className="mb-2 font-medium">Motivos principales</p>
             <ul className="list-disc space-y-1 pl-5 text-[var(--muted-foreground)]">
               {drivers.map((driver) => (
                 <li key={driver}>{driver}</li>
@@ -90,7 +85,7 @@ function RiskPanelContent({
             </ul>
           </div>
           <div>
-            <p className="mb-2 font-medium">Contribuciones explicables</p>
+            <p className="mb-2 font-medium">Detalle de cada factor</p>
             <ul className="space-y-2 text-[var(--muted-foreground)]">
               {featureContributions.length > 0 ? (
                 featureContributions.map((item) => (
@@ -98,20 +93,18 @@ function RiskPanelContent({
                     <p className="font-medium text-[var(--foreground)]">{item.feature}</p>
                     <p className="text-xs">{item.description}</p>
                     <p className="mt-1 tabular-nums text-xs">
-                      Valor {item.value.toFixed(2)} · Contribución {item.contribution.toFixed(1)}
+                      Valor {item.value.toFixed(2)} · Peso en el resultado{" "}
+                      {item.contribution.toFixed(1)}
                     </p>
                   </li>
                 ))
               ) : (
-                <li className="text-xs">
-                  Contribuciones no disponibles en esta versión de la API. Reconstruye el
-                  contenedor backend para obtener el desglose explicable.
-                </li>
+                <li className="text-xs">Detalle no disponible en esta versión.</li>
               )}
             </ul>
           </div>
           <div>
-            <p className="mb-2 font-medium">Supuestos</p>
+            <p className="mb-2 font-medium">Ten en cuenta</p>
             <ul className="list-disc space-y-1 pl-5 text-[var(--muted-foreground)]">
               {assumptions.map((assumption) => (
                 <li key={assumption}>{assumption}</li>

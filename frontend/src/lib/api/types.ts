@@ -3,6 +3,54 @@ export type AnomalySeverity = "low" | "medium" | "high";
 export type TrendPointKind = "historical" | "forecast";
 export type InsightConfidence = "low" | "medium" | "high";
 
+export interface OutbreakPrediction {
+  territorial_code: string;
+  period: string;
+  event_code: string;
+  event_name: string;
+  outbreak_probability: number;
+  classification: RiskClassification;
+  model_version: string;
+  observed_cases: number;
+  baseline_cases: number;
+  assumptions: string[];
+  drivers: string[];
+  feature_contributions: OutbreakFeatureContribution[];
+  generated_at: string;
+  persisted: boolean;
+}
+
+export interface OutbreakFeatureContribution {
+  feature: string;
+  contribution: number;
+  direction: string;
+}
+
+export interface OutbreakMapPoint {
+  territorial_code: string;
+  municipality_name: string;
+  period: string;
+  event_name: string;
+  outbreak_probability: number;
+  classification: RiskClassification;
+  observed_cases: number;
+  latitude: number;
+  longitude: number;
+}
+
+export interface OutbreakAlert {
+  territorial_code: string;
+  municipality_name: string;
+  period: string;
+  event_code: string;
+  event_name: string;
+  outbreak_probability: number;
+  classification: RiskClassification;
+  observed_cases: number;
+  baseline_cases: number;
+  top_driver: string | null;
+}
+
 export interface FeatureContribution {
   feature: string;
   value: number;
@@ -19,8 +67,44 @@ export interface DataFreshness {
   coverage_note: string;
 }
 
+export interface DatasetCatalogEntry {
+  definition_id: string;
+  name: string;
+  source_id: string;
+  source_name: string;
+  provider: string;
+  portal_url: string;
+  api_url: string;
+  measurement_unit: string;
+  granularity: string;
+  records_ingested: number;
+  municipalities_count: number;
+  latest_period: string | null;
+  last_ingestion_at: string | null;
+  coverage_note: string;
+}
+
+export interface MunicipalVariableDataset {
+  territorial_code: string;
+  municipality_name: string;
+  definition_id: string;
+  variable_name: string;
+  active_binding_id: string;
+  source_id: string;
+  api_url: string;
+  portal_url: string;
+  provider: string;
+  granularity: string;
+  selection_note: string;
+  fallback_binding_ids: string[];
+  records_ingested: number;
+  latest_period: string | null;
+  resolution_note: string;
+}
+
 export interface TerritorialRiskMapPoint {
   territorial_code: string;
+  municipality_name: string;
   period: string;
   score: number;
   classification: RiskClassification;
@@ -40,6 +124,39 @@ export interface DataDrift {
   mean_value_delta: number | null;
   drift_status: "stable" | "warning" | "alert" | "unknown";
   drift_note: string;
+}
+
+export interface Municipality {
+  territorial_code: string;
+  name: string;
+  department_code: string;
+  display_name: string;
+}
+
+export interface TerritorialReport {
+  territorial_code: string;
+  period: string;
+  generated_at: string;
+  risk: RiskScore;
+  insights: Insight[];
+  drift_status: string;
+  drift_note: string;
+  disclaimer: string;
+}
+
+export interface DepartmentMortalitySummary {
+  department_code: string;
+  department_name: string;
+  observation_count: number;
+  mean_mortality: number;
+}
+
+export interface BiasAnalysis {
+  definition_id: string;
+  period: string;
+  national_mean: number;
+  departments: DepartmentMortalitySummary[];
+  analysis_note: string;
 }
 
 export interface GeoFeatureCollection {

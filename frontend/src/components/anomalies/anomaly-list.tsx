@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Badge, severityBadgeVariant } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
+import { severityBadgeVariant } from "@/lib/risk-badges";
 import { Button } from "@/components/ui/button";
 import {
   EmptyState,
@@ -9,14 +10,9 @@ import {
   LoadingState,
 } from "@/components/shared/api-state";
 import { epidemiologicalApi } from "@/lib/api/client";
+import { severityLabels } from "@/lib/domain-labels";
 import { useApiResource } from "@/hooks/use-api-resource";
 import { useTerritorialFilters } from "@/stores/territorial-filters";
-
-const severityLabels: Record<string, string> = {
-  low: "Baja",
-  medium: "Media",
-  high: "Alta",
-};
 
 function AnomalyListContent({ territorialCode }: { territorialCode: string }) {
   const [page, setPage] = useState(1);

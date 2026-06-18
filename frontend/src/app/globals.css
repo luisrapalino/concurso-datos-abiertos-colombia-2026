@@ -1,45 +1,360 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --border: #e2e8f0;
-  --primary: #0f766e;
-  --primary-hover: #0d9488;
-  --primary-foreground: #ffffff;
-  --ring: #14b8a6;
+  --background: #f0f5f3;
+  --foreground: #142824;
+  --card: #fafcfb;
+  --card-foreground: #142824;
+  --popover: #fafcfb;
+  --popover-foreground: #142824;
+  --primary: #0a5c54;
+  --primary-foreground: #f0fdfa;
+  --secondary: #e4eeea;
+  --secondary-foreground: #1a3530;
+  --muted: #e8f0ed;
+  --muted-foreground: #5c6f6b;
+  --accent: #dcebe6;
+  --accent-foreground: #0a5c54;
+  --destructive: #b42318;
+  --border: #c8d9d4;
+  --input: #c8d9d4;
+  --ring: #0a5c54;
+  --signal: #b45309;
+  --chart-1: #0a5c54;
+  --chart-2: #5c6f6b;
+  --chart-3: #3d6b62;
+  --chart-4: #b45309;
+  --chart-5: #142824;
+  --radius: 0.5rem;
+  --sidebar: #0a3d38;
+  --sidebar-foreground: #e8f5f1;
+  --sidebar-primary: #5eead4;
+  --sidebar-primary-foreground: #042f2e;
+  --sidebar-accent: #0f4f49;
+  --sidebar-accent-foreground: #ccfbf1;
+  --sidebar-border: #0f4f49;
+  --sidebar-ring: #5eead4;
+  --map-ocean: #b8cdc6;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-dm-sans);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-heading: var(--font-source-serif);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-signal: var(--signal);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #020617;
-    --foreground: #e2e8f0;
-    --card: #0f172a;
-    --card-foreground: #e2e8f0;
-    --muted: #1e293b;
-    --muted-foreground: #94a3b8;
-    --border: #334155;
-    --primary: #14b8a6;
-    --primary-hover: #2dd4bf;
-    --primary-foreground: #042f2e;
-    --ring: #5eead4;
-  }
+.dark {
+  --background: #0c1a17;
+  --foreground: #e8f5f1;
+  --card: #142824;
+  --card-foreground: #e8f5f1;
+  --popover: #142824;
+  --popover-foreground: #e8f5f1;
+  --primary: #2dd4bf;
+  --primary-foreground: #042f2e;
+  --secondary: #1a3530;
+  --secondary-foreground: #e8f5f1;
+  --muted: #1a3530;
+  --muted-foreground: #94b8ad;
+  --accent: #134e4a;
+  --accent-foreground: #99f6e4;
+  --destructive: #f87171;
+  --border: #1f3d37;
+  --input: #1f3d37;
+  --ring: #2dd4bf;
+  --signal: #fbbf24;
+  --chart-1: #2dd4bf;
+  --chart-2: #94b8ad;
+  --chart-3: #5eead4;
+  --chart-4: #fbbf24;
+  --chart-5: #e8f5f1;
+  --sidebar: #081412;
+  --sidebar-foreground: #e8f5f1;
+  --sidebar-primary: #2dd4bf;
+  --sidebar-primary-foreground: #042f2e;
+  --sidebar-accent: #0f2e2a;
+  --sidebar-accent-foreground: #99f6e4;
+  --sidebar-border: #0f2e2a;
+  --sidebar-ring: #2dd4bf;
+  --map-ocean: #0f2420;
+}
+
+html {
+  color-scheme: light dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading), Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Superficie con curvas de nivel — identidad territorial */
+.topography-surface {
+  background-color: var(--background);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cg fill='none' stroke='%230a5c54' stroke-opacity='0.06' stroke-width='1'%3E%3Cellipse cx='200' cy='200' rx='180' ry='120'/%3E%3Cellipse cx='200' cy='200' rx='140' ry='90'/%3E%3Cellipse cx='200' cy='200' rx='100' ry='65'/%3E%3Cellipse cx='200' cy='200' rx='60' ry='40'/%3E%3Cpath d='M0 200 Q100 160 200 200 T400 200'/%3E%3Cpath d='M0 240 Q100 200 200 240 T400 240'/%3E%3Cpath d='M0 160 Q100 120 200 160 T400 160'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 400px 400px;
+}
+
+.dark .topography-surface {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cg fill='none' stroke='%232dd4bf' stroke-opacity='0.05' stroke-width='1'%3E%3Cellipse cx='200' cy='200' rx='180' ry='120'/%3E%3Cellipse cx='200' cy='200' rx='140' ry='90'/%3E%3Cellipse cx='200' cy='200' rx='100' ry='65'/%3E%3Cellipse cx='200' cy='200' rx='60' ry='40'/%3E%3Cpath d='M0 200 Q100 160 200 200 T400 200'/%3E%3Cpath d='M0 240 Q100 200 200 240 T400 240'/%3E%3Cpath d='M0 160 Q100 120 200 160 T400 160'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Anillo de señal epidemiológica */
+.signal-ring {
+  background: radial-gradient(circle at 50% 45%, var(--card) 55%, var(--accent) 100%);
+  box-shadow:
+    inset 0 0 0 1px var(--border),
+    0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.signal-ring::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 1px dashed color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+/* Entrada de página — Motion maneja transiciones en PageTransition */
+
+/* Tabla analítica */
+.data-table {
+  @apply w-full min-w-[640px] text-left text-sm;
+}
+
+.data-table thead {
+  @apply border-b bg-muted/50 text-xs text-muted-foreground;
+}
+
+.data-table th {
+  @apply px-3 py-2.5 font-medium tracking-wide uppercase;
+}
+
+.data-table tbody tr {
+  @apply border-t transition-colors;
+}
+
+.data-table tbody tr:hover {
+  @apply bg-accent/30;
+}
+
+.data-table td {
+  @apply px-3 py-2.5;
+}
+
+/* Mapa Colombia — sin tiles, alineado al design system */
+.colombia-map .leaflet-container {
+  background: var(--map-ocean);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.colombia-map .leaflet-interactive:focus {
+  outline: none;
+}
+
+.colombia-map .colombia-map-label.leaflet-tooltip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1px 4px rgb(20 40 36 / 0.12);
+  color: var(--foreground);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 6px;
+}
+
+.colombia-map .leaflet-tooltip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1px 4px rgb(20 40 36 / 0.1);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  padding: 3px 7px;
+}
+
+.colombia-map .leaflet-tooltip-top::before {
+  border-top-color: var(--border);
+}
+
+.colombia-map .leaflet-tooltip-bottom::before {
+  border-bottom-color: var(--border);
+}
+
+.colombia-map .leaflet-control-zoom {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgb(20 40 36 / 0.1) !important;
+}
+
+.colombia-map .leaflet-control-zoom a {
+  background: var(--card) !important;
+  color: var(--foreground) !important;
+  border-bottom: 1px solid var(--border) !important;
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  font-size: 16px !important;
+}
+
+.colombia-map .leaflet-control-zoom a:hover {
+  background: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+/* Impresión / exportación PDF del informe territorial */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm 12mm 16mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #142824 !important;
+    font-size: 10.5pt;
+    line-height: 1.45;
+  }
+
+  /* Forzar modo claro en impresión */
+  html.dark,
+  html.dark body,
+  html.dark .topography-surface {
+    color-scheme: light;
+  }
+
+  .topography-surface {
+    background: #fff !important;
+    background-image: none !important;
+  }
+
+  /* Ocultar chrome de la aplicación */
+  [data-slot="sidebar"],
+  [data-sidebar="sidebar"],
+  [data-sidebar="rail"],
+  .app-chrome {
+    display: none !important;
+  }
+
+  [data-slot="sidebar-inset"] {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    animation: none !important;
+  }
+
+  .print-report {
+    max-width: none;
+    color: #142824;
+  }
+
+  .print-report [data-slot="card"] {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #c8d9d4 !important;
+    background: #fff !important;
+    margin-bottom: 8mm;
+    page-break-inside: avoid;
+  }
+
+  .print-report [data-slot="card-header"],
+  .print-report [data-slot="card-content"] {
+    background: #fff !important;
+    color: #142824 !important;
+  }
+
+  .print-report .text-muted-foreground {
+    color: #5c6f6b !important;
+  }
+
+  .print-report .text-primary {
+    color: #0a5c54 !important;
+  }
+
+  .print-report .signal-ring {
+    box-shadow: inset 0 0 0 1px #c8d9d4 !important;
+    background: #f0f5f3 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .print-report svg {
+    max-width: 100%;
+  }
+
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
 }

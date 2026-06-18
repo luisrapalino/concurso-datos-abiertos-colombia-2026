@@ -1,15 +1,16 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import type { TerritorialTrend } from "@/lib/api/types";
-
-const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false });
+import { EChart, useChartTheme } from "@/components/charts/echarts-base";
 
 interface TrendChartProps {
   trend: TerritorialTrend;
+  height?: number;
 }
 
-export function TrendChart({ trend }: TrendChartProps) {
+export function TrendChart({ trend, height = 300 }: TrendChartProps) {
+  const colors = useChartTheme();
+
   const historical = trend.points.filter((point) => point.kind === "historical");
   const forecast = trend.points.filter((point) => point.kind === "forecast");
 
@@ -29,47 +30,49 @@ export function TrendChart({ trend }: TrendChartProps) {
     }
   }
 
-  const option = {
-    tooltip: { trigger: "axis" as const },
-    legend: {
-      data: ["Histórico", "Proyección"],
-      bottom: 0,
-    },
-    grid: { left: 48, right: 24, top: 24, bottom: 48 },
-    xAxis: {
-      type: "category" as const,
-      data: categories,
-      axisLabel: { rotate: 35 },
-    },
-    yAxis: {
-      type: "value" as const,
-      name: trend.indicator_name,
-    },
-    series: [
-      {
-        name: "Histórico",
-        type: "line" as const,
-        data: historicalValues,
-        smooth: true,
-        lineStyle: { width: 2, color: "#0f766e" },
-        itemStyle: { color: "#0f766e" },
-      },
-      {
-        name: "Proyección",
-        type: "line" as const,
-        data: forecastValues,
-        smooth: true,
-        lineStyle: { type: "dashed" as const, width: 2, color: "#d97706" },
-        itemStyle: { color: "#d97706" },
-      },
-    ],
-  };
-
   return (
-    <ReactECharts
-      option={option}
-      style={{ height: 360, width: "100%" }}
-      opts={{ renderer: "svg" }}
+    <EChart
+      height={height}
+      option={{
+        tooltip: { trigger: "axis" },
+        legend: {
+          data: ["Histórico", "Proyección"],
+          bottom: 0,
+          textStyle: { fontSize: 11, color: colors.text },
+        },
+        grid: { left: 48, right: 16, top: 24, bottom: 48 },
+        xAxis: {
+          type: "category",
+          data: categories,
+          axisLabel: { rotate: 35, fontSize: 10, color: colors.muted },
+        },
+        yAxis: {
+          type: "value",
+          name: "Casos",
+          nameTextStyle: { fontSize: 11, color: colors.muted },
+          axisLabel: { color: colors.muted },
+          splitLine: { lineStyle: { type: "dashed", color: colors.grid } },
+        },
+        series: [
+          {
+            name: "Histórico",
+            type: "line",
+            data: historicalValues,
+            smooth: true,
+            lineStyle: { width: 2, color: colors.primary },
+            itemStyle: { color: colors.primary },
+            areaStyle: { color: colors.area },
+          },
+          {
+            name: "Proyección",
+            type: "line",
+            data: forecastValues,
+            smooth: true,
+            lineStyle: { type: "dashed", width: 2, color: colors.forecast },
+            itemStyle: { color: colors.forecast },
+          },
+        ],
+      }}
     />
   );
 }

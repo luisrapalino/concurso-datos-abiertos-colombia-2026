@@ -1,11 +1,19 @@
 import type {
   AnomalyAlertPage,
+  BiasAnalysis,
   DataDrift,
   DataFreshness,
+  DatasetCatalogEntry,
+  MunicipalVariableDataset,
   GeoFeatureCollection,
   HealthIndicator,
   Insight,
+  Municipality,
+  OutbreakAlert,
+  OutbreakMapPoint,
+  OutbreakPrediction,
   RiskScore,
+  TerritorialReport,
   TerritorialRiskMapPoint,
   TerritorialTrend,
 } from "@/lib/api/types";
@@ -52,6 +60,16 @@ async function fetchJson<T>(url: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+function normalizeOutbreakPrediction(payload: OutbreakPrediction): OutbreakPrediction {
+  return {
+    ...payload,
+    drivers: payload.drivers ?? [],
+    assumptions: payload.assumptions ?? [],
+    feature_contributions: payload.feature_contributions ?? [],
+    persisted: payload.persisted ?? false,
+  };
+}
+
 function normalizeRiskScore(payload: RiskScore): RiskScore {
   return {
     ...payload,
@@ -80,6 +98,36 @@ export const epidemiologicalApi = {
     return fetchJson<HealthIndicator[]>(
       buildApiUrl("/health-indicators", params),
     );
+  },
+
+  listOutbreakAlerts(params: {
+    period: string;
+    event_code?: string;
+    all_events?: boolean;
+    featured_only?: boolean;
+    territorial_codes?: string;
+    limit?: number;
+  }) {
+    return fetchJson<OutbreakAlert[]>(buildApiUrl("/outbreak-alerts", params));
+  },
+
+  predictOutbreak(params: {
+    territorial_code: string;
+    period: string;
+    event_code?: string;
+  }) {
+    return fetchJson<OutbreakPrediction>(
+      buildApiUrl("/outbreak-predictions", params),
+    ).then(normalizeOutbreakPrediction);
+  },
+
+  listOutbreakMap(params: {
+    period: string;
+    event_code?: string;
+    featured_only?: boolean;
+    limit?: number;
+  }) {
+    return fetchJson<OutbreakMapPoint[]>(buildApiUrl("/outbreak-map", params));
   },
 
   predictRisk(params: { territorial_code: string; period: string }) {
@@ -116,7 +164,19 @@ export const epidemiologicalApi = {
     );
   },
 
-  listTerritorialRiskMap(params: { period: string; limit?: number }) {
+  listDatasets() {
+    return fetchJson<DatasetCatalogEntry[]>(buildApiUrl("/datasets"));
+  },
+
+  listMunicipalVariableDatasets() {
+    return fetchJson<MunicipalVariableDataset[]>(buildApiUrl("/municipal-datasets"));
+  },
+
+  listTerritorialRiskMap(params: {
+    period: string;
+    featured_only?: boolean;
+    limit?: number;
+  }) {
     return fetchJson<TerritorialRiskMapPoint[]>(
       buildApiUrl("/territorial-risk-map", params),
     );
@@ -132,5 +192,34 @@ export const epidemiologicalApi = {
     return fetchJson<DataDrift>(
       buildApiUrl("/data-drift", { definition_id: definitionId }),
     );
+  },
+
+  getTerritorialReport(params: {
+    territorial_code: string;
+    period: string;
+    insight_limit?: number;
+  }) {
+    return fetchJson<TerritorialReport>(buildApiUrl("/territorial-report", params)).then(
+      (payload) => ({
+        ...payload,
+        risk: normalizeRiskScore(payload.risk),
+      }),
+    );
+  },
+
+  getBiasAnalysis(params: { period: string; definition_id?: string }) {
+    return fetchJson<BiasAnalysis>(buildApiUrl("/bias-analysis", params));
+  },
+
+  searchMunicipalities(params: { search: string; limit?: number }) {
+    return fetchJson<Municipality[]>(buildApiUrl("/municipalities", params));
+  },
+
+  listFeaturedMunicipalities() {
+    return fetchJson<Municipality[]>(buildApiUrl("/municipalities/featured"));
+  },
+
+  getMunicipality(territorialCode: string) {
+    return fetchJson<Municipality>(buildApiUrl(`/municipalities/${territorialCode}`));
   },
 };

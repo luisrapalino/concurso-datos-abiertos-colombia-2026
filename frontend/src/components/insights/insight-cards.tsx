@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { confidenceBadgeVariant } from "@/lib/risk-badges";
 import {
   Card,
   CardContent,
@@ -22,17 +23,6 @@ const confidenceLabels: Record<string, string> = {
   medium: "Media",
   high: "Alta",
 };
-
-function confidenceVariant(confidence: string) {
-  switch (confidence) {
-    case "high":
-      return "success" as const;
-    case "medium":
-      return "warning" as const;
-    default:
-      return "secondary" as const;
-  }
-}
 
 function InsightCardsContent({ territorialCode }: { territorialCode: string }) {
   const { data, error, loading, reload } = useApiResource(
@@ -57,7 +47,7 @@ function InsightCardsContent({ territorialCode }: { territorialCode: string }) {
           <CardHeader>
             <div className="flex flex-wrap items-center gap-2">
               <CardTitle className="text-base">{insight.title}</CardTitle>
-              <Badge variant={confidenceVariant(insight.confidence)}>
+              <Badge variant={confidenceBadgeVariant(insight.confidence)}>
                 Confianza {confidenceLabels[insight.confidence] ?? insight.confidence}
               </Badge>
             </div>
