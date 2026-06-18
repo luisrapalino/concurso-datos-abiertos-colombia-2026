@@ -1,9 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useMemo } from "react";
 import { ArrowRightIcon } from "lucide-react";
+import { ColombiaTerritorialChart } from "@/components/map/colombia-territorial-chart";
 import { SignalCardPresence } from "@/components/motion/signal-card-presence";
 import { ResourcePresence } from "@/components/shared/resource-presence";
 import { SignalReadout } from "@/components/shared/signal-readout";
@@ -14,33 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  COLOMBIA_CENTER,
-  type MapClassification,
-} from "@/components/map/colombia-map-theme";
+import type { MapClassification } from "@/components/map/colombia-map-theme";
 import { useMapTheme } from "@/hooks/use-map-theme";
 import { epidemiologicalApi } from "@/lib/api/client";
 import type { GeoFeatureCollection, OutbreakMapPoint } from "@/lib/api/types";
 import { formatMunicipalityName, riskClassificationLabels } from "@/lib/domain-labels";
 import { useApiResource } from "@/hooks/use-api-resource";
 import { useTerritorialFilters } from "@/stores/territorial-filters";
-
-const MapContainer = dynamic(
-  async () => (await import("react-leaflet")).MapContainer,
-  { ssr: false },
-);
-const CircleMarker = dynamic(
-  async () => (await import("react-leaflet")).CircleMarker,
-  { ssr: false },
-);
-const Tooltip = dynamic(async () => (await import("react-leaflet")).Tooltip, { ssr: false });
-const GeoJSON = dynamic(async () => (await import("react-leaflet")).GeoJSON, {
-  ssr: false,
-});
-const MapFitColombiaLayer = dynamic(
-  () => import("@/components/map/map-fit-colombia").then((mod) => mod.MapFitColombia),
-  { ssr: false },
-);
 
 function MapLegend({ colors }: { colors: Record<MapClassification, string> }) {
   return (
@@ -84,16 +63,13 @@ function TerritorialMapContent({
     [],
   );
 
-  const { theme: mapTheme, classificationColors } = useMapTheme();
+  const { classificationColors } = useMapTheme();
 
   const points = outbreakQuery.data;
   const loading = outbreakQuery.loading || boundariesQuery.loading;
   const error = outbreakQuery.error ?? boundariesQuery.error;
 
-  const boundaryData = useMemo(
-    () => boundariesQuery.data as GeoFeatureCollection | null,
-    [boundariesQuery.data],
-  );
+  const boundaryData = boundariesQuery.data as GeoFeatureCollection | null;
 
   const selectedPoint = points?.find((p) => p.territorial_code === selectedCode);
 
@@ -147,87 +123,12 @@ function TerritorialMapContent({
         </CardHeader>
         <CardContent className="space-y-3 px-4 pt-3 pb-4">
           <MapLegend colors={classificationColors} />
-          <div
-            className="colombia-map h-[440px] overflow-hidden rounded-lg border border-border/60 shadow-inner"
-            style={{ backgroundColor: mapTheme.background }}
-          >
-            <MapContainer
-              center={COLOMBIA_CENTER}
-              zoom={6}
-              scrollWheelZoom={false}
-              zoomControl
-              attributionControl={false}
-              className="h-full w-full"
-            >
-              <MapFitColombiaLayer boundaryData={boundaryData} />
-
-              {boundaryData ? (
-                <>
-                  <GeoJSON
-                    data={boundaryData}
-                    style={() => ({
-                      color: mapTheme.background,
-                      weight: 3,
-                      fillColor: mapTheme.landFill,
-                      fillOpacity: 1,
-                    })}
-                    interactive={false}
-                  />
-                  <GeoJSON
-                    data={boundaryData}
-                    style={() => ({
-                      color: mapTheme.landStroke,
-                      weight: mapTheme.landWeight,
-                      fillColor: mapTheme.landFill,
-                      fillOpacity: 1,
-                    })}
-                    interactive={false}
-                  />
-                </>
-              ) : null}
-
-              {(points as OutbreakMapPoint[]).map((point) => {
-                const isSelected = point.territorial_code === selectedCode;
-                const color = classificationColors[point.classification];
-                return (
-                  <CircleMarker
-                    key={point.territorial_code}
-                    center={[point.latitude, point.longitude]}
-                    radius={isSelected ? 13 : 10}
-                    pathOptions={{
-                      color: isSelected ? mapTheme.selectedRing : mapTheme.markerStroke,
-                      weight: isSelected ? 3 : mapTheme.markerStrokeWidth,
-                      fillColor: color,
-                      fillOpacity: 1,
-                    }}
-                    eventHandlers={{
-                      click: () =>
-                        onSelectMunicipality(point.territorial_code, point.municipality_name),
-                    }}
-                  >
-                    <Tooltip
-                      permanent={isSelected}
-                      direction="top"
-                      offset={[0, -14]}
-                      className={isSelected ? "colombia-map-label" : undefined}
-                    >
-                      <span className="font-medium">
-                        {formatMunicipalityName(point.municipality_name)}
-                      </span>
-                      {" · "}
-                      {point.outbreak_probability.toFixed(0)}
-                      {!isSelected ? (
-                        <>
-                          {" · "}
-                          {point.observed_cases.toFixed(0)} casos
-                        </>
-                      ) : null}
-                    </Tooltip>
-                  </CircleMarker>
-                );
-              })}
-            </MapContainer>
-          </div>
+          <ColombiaTerritorialChart
+            boundaryData={boundaryData}
+            points={points as OutbreakMapPoint[]}
+            selectedCode={selectedCode}
+            onSelectMunicipality={onSelectMunicipality}
+          />
         </CardContent>
       </Card>
     </div>

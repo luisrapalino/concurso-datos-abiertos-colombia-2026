@@ -1,12 +1,10 @@
-import type { LatLngBoundsExpression } from "leaflet";
-
-/** Límites aproximados de Colombia (sur-oeste → norte-este). */
-export const COLOMBIA_BOUNDS: LatLngBoundsExpression = [
-  [-4.5, -81.8],
-  [13.6, -66.5],
+/** Límites aproximados de Colombia para ECharts geo (oeste-norte → este-sur). */
+export const COLOMBIA_BOUNDS_GEO: [[number, number], [number, number]] = [
+  [-81.8, 13.6],
+  [-66.5, -4.5],
 ];
 
-export const COLOMBIA_CENTER: [number, number] = [4.6, -74.1];
+export const COLOMBIA_MAP_NAME = "colombia-departments";
 
 export const mapThemeLight = {
   background: "#b8cdc6",
@@ -16,6 +14,10 @@ export const mapThemeLight = {
   markerStroke: "#fafcfb",
   markerStrokeWidth: 2.5,
   selectedRing: "#0a5c54",
+  tooltipBg: "#fafcfb",
+  tooltipBorder: "#c8d9d4",
+  tooltipText: "#142824",
+  tooltipMuted: "#5c6f6b",
 } as const;
 
 export const mapThemeDark = {
@@ -26,6 +28,10 @@ export const mapThemeDark = {
   markerStroke: "#142824",
   markerStrokeWidth: 2.5,
   selectedRing: "#2dd4bf",
+  tooltipBg: "#142824",
+  tooltipBorder: "#1f3d37",
+  tooltipText: "#e8f5f1",
+  tooltipMuted: "#94b8ad",
 } as const;
 
 /** @deprecated Usa useMapTheme() en componentes cliente */
