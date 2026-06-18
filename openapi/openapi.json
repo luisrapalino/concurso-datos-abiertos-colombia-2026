@@ -282,6 +282,165 @@
         }
       }
     },
+    "/api/v1/bias-analysis": {
+      "get": {
+        "tags": [
+          "data-freshness"
+        ],
+        "summary": "Get Bias Analysis",
+        "operationId": "get_bias_analysis_api_v1_bias_analysis_get",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Period"
+            }
+          },
+          {
+            "name": "definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "default": "general-mortality-rate",
+              "title": "Definition Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BiasAnalysisReadDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/municipalities": {
+      "get": {
+        "tags": [
+          "data-freshness"
+        ],
+        "summary": "Search Municipalities",
+        "operationId": "search_municipalities_api_v1_municipalities_get",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "title": "Search"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 25,
+              "minimum": 1,
+              "default": 8,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MunicipalityReadDto"
+                  },
+                  "title": "Response Search Municipalities Api V1 Municipalities Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/municipalities/{territorial_code}": {
+      "get": {
+        "tags": [
+          "data-freshness"
+        ],
+        "summary": "Get Municipality",
+        "operationId": "get_municipality_api_v1_municipalities__territorial_code__get",
+        "parameters": [
+          {
+            "name": "territorial_code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 5,
+              "maxLength": 5,
+              "pattern": "^\\d{5}$",
+              "title": "Territorial Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MunicipalityReadDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/territorial-boundaries": {
       "get": {
         "tags": [
@@ -448,6 +607,146 @@
         }
       }
     },
+    "/api/v1/outbreak-predictions": {
+      "get": {
+        "tags": [
+          "outbreak-prediction"
+        ],
+        "summary": "Predict Outbreak",
+        "operationId": "predict_outbreak_api_v1_outbreak_predictions_get",
+        "parameters": [
+          {
+            "name": "territorial_code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Territorial Code"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 7,
+              "maxLength": 16,
+              "pattern": "^\\d{4}-(W\\d{2}|01)$",
+              "description": "Epidemiological week (YYYY-Www) or annual period (YYYY-01).",
+              "title": "Period"
+            },
+            "description": "Epidemiological week (YYYY-Www) or annual period (YYYY-01)."
+          },
+          {
+            "name": "event_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16,
+              "default": "210",
+              "title": "Event Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutbreakPredictionReadDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/outbreak-map": {
+      "get": {
+        "tags": [
+          "outbreak-prediction"
+        ],
+        "summary": "List Outbreak Map",
+        "operationId": "list_outbreak_map_api_v1_outbreak_map_get",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 7,
+              "maxLength": 16,
+              "title": "Period"
+            }
+          },
+          {
+            "name": "event_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16,
+              "default": "210",
+              "title": "Event Code"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OutbreakMapPointDto"
+                  },
+                  "title": "Response List Outbreak Map Api V1 Outbreak Map Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/anomalies": {
       "get": {
         "tags": [
@@ -471,6 +770,24 @@
               ],
               "title": "Territorial Code"
             }
+          },
+          {
+            "name": "definition_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Indicator definition id (defaults to dengue-weekly-cases).",
+              "title": "Definition Id"
+            },
+            "description": "Indicator definition id (defaults to dengue-weekly-cases)."
           },
           {
             "name": "page",
@@ -544,7 +861,7 @@
             "schema": {
               "type": "string",
               "minLength": 1,
-              "default": "general-mortality-rate",
+              "default": "dengue-weekly-cases",
               "title": "Indicator Id"
             }
           },
@@ -626,6 +943,69 @@
                     "$ref": "#/components/schemas/InsightReadDto"
                   },
                   "title": "Response List Insights Api V1 Insights Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/territorial-report": {
+      "get": {
+        "tags": [
+          "insights"
+        ],
+        "summary": "Get Territorial Report",
+        "operationId": "get_territorial_report_api_v1_territorial_report_get",
+        "parameters": [
+          {
+            "name": "territorial_code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Territorial Code"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Period"
+            }
+          },
+          {
+            "name": "insight_limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10,
+              "minimum": 1,
+              "default": 3,
+              "title": "Insight Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TerritorialReportReadDto"
                 }
               }
             }
@@ -743,6 +1123,42 @@
           "high"
         ],
         "title": "AnomalySeverity"
+      },
+      "BiasAnalysisReadDto": {
+        "properties": {
+          "definition_id": {
+            "type": "string",
+            "title": "Definition Id"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "national_mean": {
+            "type": "number",
+            "title": "National Mean"
+          },
+          "departments": {
+            "items": {
+              "$ref": "#/components/schemas/DepartmentMortalitySummaryDto"
+            },
+            "type": "array",
+            "title": "Departments"
+          },
+          "analysis_note": {
+            "type": "string",
+            "title": "Analysis Note",
+            "default": "Comparaci\u00f3n descriptiva por departamento; no implica causalidad ni control por confusores socio-demogr\u00e1ficos."
+          }
+        },
+        "type": "object",
+        "required": [
+          "definition_id",
+          "period",
+          "national_mean",
+          "departments"
+        ],
+        "title": "BiasAnalysisReadDto"
       },
       "DataDriftReadDto": {
         "properties": {
@@ -951,6 +1367,57 @@
         ],
         "title": "DataQualityReadDto"
       },
+      "DepartmentMortalitySummaryDto": {
+        "properties": {
+          "department_code": {
+            "type": "string",
+            "title": "Department Code"
+          },
+          "department_name": {
+            "type": "string",
+            "title": "Department Name"
+          },
+          "observation_count": {
+            "type": "integer",
+            "title": "Observation Count"
+          },
+          "mean_mortality": {
+            "type": "number",
+            "title": "Mean Mortality"
+          }
+        },
+        "type": "object",
+        "required": [
+          "department_code",
+          "department_name",
+          "observation_count",
+          "mean_mortality"
+        ],
+        "title": "DepartmentMortalitySummaryDto"
+      },
+      "FeatureContributionDto": {
+        "properties": {
+          "feature": {
+            "type": "string",
+            "title": "Feature"
+          },
+          "contribution": {
+            "type": "number",
+            "title": "Contribution"
+          },
+          "direction": {
+            "type": "string",
+            "title": "Direction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "feature",
+          "contribution",
+          "direction"
+        ],
+        "title": "FeatureContributionDto"
+      },
       "FeatureContributionReadDto": {
         "properties": {
           "feature": {
@@ -1130,6 +1597,178 @@
         ],
         "title": "InsightReadDto"
       },
+      "MunicipalityReadDto": {
+        "properties": {
+          "territorial_code": {
+            "type": "string",
+            "title": "Territorial Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "department_code": {
+            "type": "string",
+            "title": "Department Code"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "territorial_code",
+          "name",
+          "department_code",
+          "display_name"
+        ],
+        "title": "MunicipalityReadDto"
+      },
+      "OutbreakClassification": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ],
+        "title": "OutbreakClassification"
+      },
+      "OutbreakMapPointDto": {
+        "properties": {
+          "territorial_code": {
+            "type": "string",
+            "title": "Territorial Code"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "event_name": {
+            "type": "string",
+            "title": "Event Name"
+          },
+          "outbreak_probability": {
+            "type": "number",
+            "title": "Outbreak Probability"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/OutbreakClassification"
+          },
+          "observed_cases": {
+            "type": "number",
+            "title": "Observed Cases"
+          },
+          "latitude": {
+            "type": "number",
+            "title": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "title": "Longitude"
+          }
+        },
+        "type": "object",
+        "required": [
+          "territorial_code",
+          "period",
+          "event_name",
+          "outbreak_probability",
+          "classification",
+          "observed_cases",
+          "latitude",
+          "longitude"
+        ],
+        "title": "OutbreakMapPointDto"
+      },
+      "OutbreakPredictionReadDto": {
+        "properties": {
+          "territorial_code": {
+            "type": "string",
+            "title": "Territorial Code"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "event_code": {
+            "type": "string",
+            "title": "Event Code"
+          },
+          "event_name": {
+            "type": "string",
+            "title": "Event Name"
+          },
+          "outbreak_probability": {
+            "type": "number",
+            "title": "Outbreak Probability"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/OutbreakClassification"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "observed_cases": {
+            "type": "number",
+            "title": "Observed Cases"
+          },
+          "baseline_cases": {
+            "type": "number",
+            "title": "Baseline Cases"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Assumptions"
+          },
+          "drivers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Drivers"
+          },
+          "feature_contributions": {
+            "items": {
+              "$ref": "#/components/schemas/FeatureContributionDto"
+            },
+            "type": "array",
+            "title": "Feature Contributions"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "persisted": {
+            "type": "boolean",
+            "title": "Persisted",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "territorial_code",
+          "period",
+          "event_code",
+          "event_name",
+          "outbreak_probability",
+          "classification",
+          "model_version",
+          "observed_cases",
+          "baseline_cases",
+          "assumptions",
+          "drivers",
+          "feature_contributions",
+          "generated_at"
+        ],
+        "title": "OutbreakPredictionReadDto"
+      },
       "RiskClassification": {
         "type": "string",
         "enum": [
@@ -1255,6 +1894,57 @@
           "municipality_count"
         ],
         "title": "TerritorialCatalogMetadataDto"
+      },
+      "TerritorialReportReadDto": {
+        "properties": {
+          "territorial_code": {
+            "type": "string",
+            "title": "Territorial Code"
+          },
+          "period": {
+            "type": "string",
+            "title": "Period"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "risk": {
+            "$ref": "#/components/schemas/RiskScoreReadDto"
+          },
+          "insights": {
+            "items": {
+              "$ref": "#/components/schemas/InsightReadDto"
+            },
+            "type": "array",
+            "title": "Insights"
+          },
+          "drift_status": {
+            "type": "string",
+            "title": "Drift Status"
+          },
+          "drift_note": {
+            "type": "string",
+            "title": "Drift Note"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer",
+            "default": "Informe exploratorio basado en datos abiertos; no sustituye validaci\u00f3n epidemiol\u00f3gica ni decisiones institucionales."
+          }
+        },
+        "type": "object",
+        "required": [
+          "territorial_code",
+          "period",
+          "generated_at",
+          "risk",
+          "insights",
+          "drift_status",
+          "drift_note"
+        ],
+        "title": "TerritorialReportReadDto"
       },
       "TerritorialRiskMapPointDto": {
         "properties": {
