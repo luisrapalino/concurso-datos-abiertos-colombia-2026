@@ -5,20 +5,21 @@ from modules.anomaly_detection.application.dto import (
 )
 from modules.anomaly_detection.domain.detection import AnomalyAlert, evaluate_observation
 from modules.anomaly_detection.domain.repositories import CuratedObservationsReader
-from modules.territorial_risk.domain.risk_score import GENERAL_MORTALITY_DEFINITION_ID
+from modules.outbreak_prediction.domain.outbreak_prediction import DENGUE_DEFINITION_ID
 from shared.pagination import PaginatedResponse
 
 
 class ListAnomaliesUseCase:
-    """Detects territorial anomalies from curated mortality observations."""
+    """Detects territorial anomalies from curated transmissible disease observations."""
 
     def __init__(self, reader: CuratedObservationsReader) -> None:
         self._reader = reader
 
     def execute(self, query: ListAnomaliesQueryDto) -> AnomalyAlertPageDto:
         territorial_code = str(query.territorial_code) if query.territorial_code else None
+        definition_id = query.definition_id or DENGUE_DEFINITION_ID
         observations = self._reader.list_observations_with_period_median(
-            GENERAL_MORTALITY_DEFINITION_ID,
+            definition_id,
             territorial_code=territorial_code,
         )
 

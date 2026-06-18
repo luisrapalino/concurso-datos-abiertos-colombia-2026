@@ -4,6 +4,7 @@ from modules.anomaly_detection.interfaces.router import router as anomalies_rout
 from modules.epidemiological_surveillance.interfaces.router import router as data_freshness_router
 from modules.health_indicators.interfaces.router import router as health_indicators_router
 from modules.insights_generation.interfaces.router import router as insights_router
+from modules.outbreak_prediction.interfaces.router import router as outbreak_prediction_router
 from modules.prediction_engine.interfaces.router import router as territorial_trends_router
 from modules.territorial_risk.interfaces.router import router as predict_risk_router
 
@@ -11,6 +12,7 @@ api_v1_router = APIRouter()
 api_v1_router.include_router(health_indicators_router)
 api_v1_router.include_router(data_freshness_router)
 api_v1_router.include_router(predict_risk_router)
+api_v1_router.include_router(outbreak_prediction_router)
 api_v1_router.include_router(anomalies_router)
 api_v1_router.include_router(territorial_trends_router)
 api_v1_router.include_router(insights_router)

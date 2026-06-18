@@ -10,7 +10,7 @@ class AnomalySeverity(StrEnum):
     HIGH = "high"
 
 
-DETECTION_VERSION = "mortality-median-v1.0.0"
+DETECTION_VERSION = "outbreak-cases-median-v1.0.0"
 MEDIUM_RATIO_THRESHOLD = 1.5
 HIGH_RATIO_THRESHOLD = 2.0
 
@@ -58,7 +58,7 @@ def evaluate_observation(observation: ObservationWithBaseline) -> AnomalyAlert |
         detected_on=date(year, 1, 1),
         severity=severity,
         description=(
-            "Mortality rate exceeds the national median for the period "
+            "Case count exceeds the national median for the epidemiological period "
             f"(ratio {ratio:.2f}). Requires manual epidemiological review."
         ),
         baseline_value=float(observation.baseline),

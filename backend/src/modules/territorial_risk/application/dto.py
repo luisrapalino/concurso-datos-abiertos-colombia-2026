@@ -48,11 +48,20 @@ class RiskScoreReadDto(BaseModel):
 class TerritorialRiskMapQueryDto(BaseModel):
     period: Period
     definition_id: str = Field(default="general-mortality-rate", min_length=1)
+    featured_only: bool = Field(
+        default=True,
+        description="When true, limits the map to curated major municipalities.",
+    )
+    territorial_codes: str | None = Field(
+        default=None,
+        description="Optional comma-separated DANE codes (overrides featured_only).",
+    )
     limit: int = Field(default=200, ge=1, le=500)
 
 
 class TerritorialRiskMapPointDto(BaseModel):
     territorial_code: TerritorialCode
+    municipality_name: str
     period: Period
     score: float = Field(ge=0, le=100)
     classification: RiskClassification

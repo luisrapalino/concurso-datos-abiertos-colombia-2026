@@ -13,7 +13,7 @@ class TrendPointKind(StrEnum):
 
 class TerritorialTrendsQueryDto(BaseModel):
     territorial_code: TerritorialCode
-    indicator_id: str = Field(default="general-mortality-rate", min_length=1)
+    indicator_id: str = Field(default="dengue-weekly-cases", min_length=1)
     horizon_weeks: int = Field(default=4, ge=1, le=12)
 
 
