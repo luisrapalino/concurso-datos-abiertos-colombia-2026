@@ -6,10 +6,11 @@ Documento de referencia para las fases 5 y 8 del roadmap.
 
 | Capacidad | Versión | Método | Evaluación |
 |-----------|---------|--------|------------|
-| Riesgo territorial (default) | `mortality-relative-v1.0.0` | Score relativo vs mediana nacional | Descomposición rule-based |
-| Riesgo territorial (promovido) | `ridge-mortality-risk-v1.0.0` | Ridge sobre panel `[observado, mediana, ratio]` | SHAP `LinearExplainer` en serving |
-| Anomalías | `mortality-median-v1.0.0` | Ratio vs mediana del periodo | Umbrales 1.5 / 2.0 revisables manualmente |
-| Tendencias | `prophet-annual-v1.0.0` o `linear-extrapolation-v1.0.0` | Prophet con fallback lineal | Panel multi-año 2018–2020 disponible |
+| **Predicción de brotes (principal)** | `outbreak-multivariate-v1.0.0` | Score multivariado: casos SIVIGILA + vacunación + acceso + PM2.5 | Contribuciones por feature |
+| Riesgo territorial (contexto) | `mortality-relative-v1.0.0` | Score relativo vs mediana nacional | Descomposición rule-based |
+| Riesgo territorial (promovido) | `ridge-mortality-risk-v1.0.0` | Ridge sobre panel mortalidad | SHAP en serving |
+| Anomalías | `outbreak-cases-median-v1.0.0` | Ratio casos dengue vs mediana del periodo | Umbrales 1.5 / 2.0 |
+| Tendencias | `prophet-annual-v1.0.0` o `linear-extrapolation-v1.0.0` | Prophet / fallback sobre series curadas | Panel multi-periodo |
 | Insights | `composite-narrative-v1.0.0` | Plantillas determinísticas | Revisión humana obligatoria |
 
 ## Ciclo entrenar → promover → rollback
@@ -26,6 +27,7 @@ Entrenamiento desde PostgreSQL curado:
 
 ```bash
 PYTHONPATH=src DATABASE_URL=... python ml/train_mortality_experiment.py --from-db
+PYTHONPATH=src DATABASE_URL=... python ml/evaluate_temporal.py --from-db
 ```
 
 Artefactos en `backend/ml/artifacts/`; promoción en `promoted.json`.
@@ -50,6 +52,6 @@ Artefactos en `backend/ml/artifacts/`; promoción en `promoted.json`.
 
 ## Próximos pasos
 
-1. Evaluación temporal cruzada documentada por indicador.
-2. Monitoreo de drift en scores y calidad de ingestión.
-3. Registro de experimentos con metadatos extendidos (semillas, datasets versionados).
+1. Monitoreo de drift multivariado y umbrales configurables.
+2. Registro de experimentos con metadatos extendidos (semillas, datasets versionados).
+3. Evaluación por ventanas móviles documentada por indicador.

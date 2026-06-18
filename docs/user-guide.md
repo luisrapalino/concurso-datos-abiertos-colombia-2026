@@ -1,45 +1,41 @@
-# Guía de usuario (MVP)
+# Guía de usuario
 
-Plataforma de **Inteligencia Epidemiológica Territorial** — uso básico para revisión analítica.
+**Radar de brotes** — vigilancia temprana con datos abiertos de Colombia.
 
 ## Acceso
 
 | Servicio | URL local |
 |----------|-----------|
-| Frontend | http://localhost:3000 |
+| Frontend | http://localhost:3002 |
 | API | http://localhost:8000/docs |
 
-Con Docker: `docker compose up --build` desde la raíz del repositorio.
+## Las 4 vistas (todo lo que necesitas)
+
+1. **Radar** (`/`) — ¿Qué municipios revisar primero? Ranking cruzando **6 enfermedades transmisibles** (dengue, chikungunya, dengue grave, hepatitis A/B, fiebre tifoidea).
+2. **Ficha** (`/brotes`) — Detalle explicado para un municipio, enfermedad y semana epidemiológica.
+3. **Mapa** (`/mapa`) — Señales geográficas por enfermedad en ciudades principales.
+4. **Informe** (`/informe`) — PDF imprimible para reuniones de vigilancia.
+
+## Filtros
+
+- **Enfermedad** — selecciona el evento SIVIGILA (código INS).
+- **Municipio** — busca por nombre o código DANE.
+- **Semana epidemiológica** — periodo ISO de la señal.
 
 ## Flujo recomendado
 
-1. Revisa la **frescura de datos** en el header (última ingestión INS / datos.gov.co).
-2. Selecciona **código territorial** (5 dígitos DANE, ej. `05001`) y **periodo** (`YYYY-01`).
-3. Recorre las vistas:
-   - **Indicadores** — observaciones curadas.
-   - **Mapa** — municipios DIVIPOLA con contornos departamentales DANE.
-   - **Riesgo** — score explicable vs mediana nacional.
-   - **Anomalías** — desviaciones respecto a la línea base del periodo.
-   - **Tendencias** — histórico + proyección (Prophet o fallback lineal).
-   - **Insights** — narrativa automática con contexto del sistema.
+1. Abre el **Radar** y mira el ranking de la semana.
+2. Haz clic en **Ver ficha** del municipio que te interese.
+3. Usa el **Mapa** para contexto geográfico.
+4. Genera el **Informe** si necesitas compartir en una reunión.
 
 ## Interpretación responsable
 
-- El **riesgo territorial** prioriza revisión humana; no es alerta clínica ni decisión automática.
-- La **cobertura** depende de lo publicado en datos abiertos; pueden existir lagunas territoriales.
-- Las **proyecciones** son exploratorias; correlación histórica no implica causalidad.
+- La señal **prioriza revisión humana**; no confirma brote ni activa respuesta automática.
+- Los datos dependen de lo publicado en [datos.gov.co](https://www.datos.gov.co).
+- La sincronización es **nacional por lotes** (municipio → año → páginas de 1 000). Hay un script por enfermedad o grupo:
+  - `./scripts/sync-sivigila-diseases.sh` — las 6 enfermedades
+  - `./scripts/sync-sivigila-diseases.sh chikungunya hepatitis-a` — solo las que indiques
+  - Logs en `logs/sync-sivigila-<enfermedad>.log`
 
-## Datos de demo
-
-- Territorio: `05001` (Medellín)
-- Periodo con datos ingestados: `2020-01` (ajustar si ingestaste más años)
-
-## Ingestión multi-año (operador)
-
-```bash
-cd backend
-PYTHONPATH=src python -m modules.epidemiological_surveillance.interfaces.cli ingest \
-  datos-gov-mortality-indicators --years 2018,2019,2020 --limit 15000
-```
-
-Más detalle operativo: [`runbook-release.md`](runbook-release.md) y [`demo-guide.md`](demo-guide.md).
+Más detalle técnico: [`concurso-alignment.md`](concurso-alignment.md), [`data-sources.md`](data-sources.md).

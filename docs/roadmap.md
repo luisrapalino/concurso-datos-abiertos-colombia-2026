@@ -12,15 +12,15 @@ Este documento describe las **fases** recomendadas hasta tener el proyecto **fun
 
 ## Estado actual (línea base)
 
-- **F0–F3:** MVP documentado, ingestión real datos.gov.co, validación DIVIPOLA en ingestión, worker programado Docker, API de indicadores.
-- **F4–F6:** Riesgo persistente y explicable, anomalías, tendencias (Prophet + fallback), insights narrativos con contexto de sistema.
-- **F7:** Frontend Next.js con mapa DIVIPOLA + GeoJSON departamental, cliente OpenAPI tipado, componentes ui base.
-- **F8:** Entrenamiento Ridge, promoción/rollback, SHAP en serving, evaluación temporal documentada.
-- **F9 (parcial):** structlog, `/metrics`, rate limit, data-quality, drift básico (`/data-drift`), backups Postgres.
-- **F10 (parcial):** docs usuario/arquitectura/runbooks, demo guide, smoke E2E Playwright, tag `v0.1.1-mvp`.
-- **Pendiente:** push del tag, drift avanzado, OpenTelemetry, auth institucional.
+- **F0–F3:** MVP documentado, ingestión real datos.gov.co, validación DIVIPOLA, worker programado Docker, API de indicadores.
+- **F4–F6:** Riesgo persistente y explicable, anomalías, tendencias (Prophet + fallback), insights narrativos.
+- **F7:** Frontend Next.js con mapa DIVIPOLA + GeoJSON departamental, cliente API tipado, Playwright E2E.
+- **F8:** Entrenamiento Ridge, promoción/rollback, SHAP en serving, evaluación temporal (`--from-db`).
+- **F9:** structlog, `/metrics`, rate limit, data-quality, drift (`/data-drift`), backups Postgres, `monitor-drift.sh`.
+- **F10:** docs usuario/arquitectura/runbooks, demo guide, matriz de aceptación, informe territorial, API key opcional, tag `v0.3.0-mvp`.
+- **Pendiente:** OpenTelemetry, OAuth2/SSO, GeoJSON municipal completo, SIVIGILA.
 
-Ver también [`post-mvp-roadmap.md`](post-mvp-roadmap.md).
+Ver [`acceptance-matrix.md`](acceptance-matrix.md), [`post-mvp-roadmap.md`](post-mvp-roadmap.md) y [`cloud-deploy.md`](cloud-deploy.md).
 
 ---
 

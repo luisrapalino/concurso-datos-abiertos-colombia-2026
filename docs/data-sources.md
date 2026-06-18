@@ -57,3 +57,80 @@ Ejecución única:
 ```bash
 docker compose run --rm ingestion-worker python -m modules.epidemiological_surveillance.interfaces.scheduler --once
 ```
+
+---
+
+## datos-gov-sivigila
+
+| Campo | Valor |
+|-------|--------|
+| **ID interno** | `datos-gov-sivigila` |
+| **Nombre** | Datos de Vigilancia en Salud Pública de Colombia (SIVIGILA) |
+| **Dataset** | [4hyg-wa9d](https://www.datos.gov.co/resource/4hyg-wa9d.json) |
+| **Granularidad** | Municipal, semana epidemiológica |
+| **Indicador piloto** | Dengue (`cod_eve=210`) → `dengue-weekly-cases` |
+| **Periodo interno** | `YYYY-Www` |
+
+### Sincronización incremental por lotes (recomendado)
+
+Descarga datos año a año, paginando de a 1000 registros. Para SIVIGILA prioriza las 18 ciudades principales.
+
+```bash
+# Todas las fuentes del reto, 2022 → 2018
+./scripts/sync-open-data-batch.sh
+
+# Una sola fuente
+cd backend && export PYTHONPATH=src
+python -m modules.epidemiological_surveillance.interfaces.cli ingest-sync datos-gov-sivigila-dengue \
+  --batch-size 1000 --start-year 2022 --end-year 2018
+```
+
+Opciones: `--max-batches` (smoke test), `--all-municipalities`, `--territorial-codes 05001,11001`.
+
+### Ingestión simple (legacy)
+
+```bash
+python -m modules.epidemiological_surveillance.interfaces.cli ingest datos-gov-sivigila-dengue --year 2020 --limit 20000
+```
+
+---
+
+## datos-gov-vaccination-coverage
+
+| Campo | Valor |
+|-------|--------|
+| **ID interno** | `datos-gov-vaccination-coverage` |
+| **Dataset** | [6i25-2hdt](https://www.datos.gov.co/resource/6i25-2hdt.json) |
+| **Granularidad** | Departamental (expandida a municipios vía DIVIPOLA) |
+| **Indicador** | DPT-HepB-Hib pentavalente → `dpta-penta-vaccination-coverage` |
+
+```bash
+python -m modules.epidemiological_surveillance.interfaces.cli ingest datos-gov-vaccination-coverage --year 2020
+```
+
+---
+
+## datos-gov-air-quality
+
+| Campo | Valor |
+|-------|--------|
+| **ID interno** | `datos-gov-air-quality` |
+| **Dataset** | [yspz-pxxn](https://www.datos.gov.co/resource/yspz-pxxn.json) |
+| **Granularidad** | Estación diaria → PM2.5 anual municipal |
+| **Indicador** | `pm25-annual-mean` |
+
+```bash
+python -m modules.epidemiological_surveillance.interfaces.cli ingest datos-gov-air-quality --year 2020
+```
+
+---
+
+## Proxy de acceso a salud (misma fuente INS 4e4i-ua65)
+
+| Indicador | Definición |
+|-----------|------------|
+| `PORCENTAJE DE PARTOS INSTITUCIONALES` | `institutional-births-coverage` |
+
+```bash
+python -m modules.epidemiological_surveillance.interfaces.cli ingest datos-gov-health-access --year 2020
+```
