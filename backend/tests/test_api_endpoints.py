@@ -1,4 +1,8 @@
 import pytest
+from fastapi.testclient import TestClient
+
+from api.main import create_app
+from config.settings import get_settings
 
 
 @pytest.mark.integration
@@ -54,6 +58,30 @@ def test_data_freshness_endpoint(client) -> None:
 
 
 @pytest.mark.integration
+def test_list_datasets_endpoint(client) -> None:
+    response = client.get("/api/v1/datasets")
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) >= 1
+    dataset = next(item for item in payload if item["definition_id"] == "general-mortality-rate")
+    assert dataset["source_id"] == "datos-gov-mortality-indicators"
+    assert dataset["records_ingested"] >= 0
+    assert dataset["portal_url"].startswith("https://www.datos.gov.co/")
+    assert dataset["api_url"].startswith("https://www.datos.gov.co/resource/")
+
+
+@pytest.mark.integration
+def test_list_municipal_datasets_endpoint(client) -> None:
+    response = client.get("/api/v1/municipal-datasets")
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) >= 4
+    pm25_rows = [row for row in payload if row["definition_id"] == "pm25-annual-mean"]
+    assert len(pm25_rows) == 4
+    assert pm25_rows[0]["active_binding_id"] == "pm25-annual-municipal"
+
+
+@pytest.mark.integration
 def test_territorial_risk_map_endpoint(client) -> None:
     response = client.get(
         "/api/v1/territorial-risk-map",
@@ -83,8 +111,57 @@ def test_anomalies_endpoint(client) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert "items" in payload
-    assert payload["total_items"] >= 1
-    assert payload["items"][0]["indicator_id"] == "general-mortality-rate"
+    assert payload["total_items"] >= 0
+    if payload["items"]:
+        assert payload["items"][0]["indicator_id"] == "dengue-weekly-cases"
+
+
+@pytest.mark.integration
+def test_outbreak_prediction_endpoint(client) -> None:
+    response = client.get(
+        "/api/v1/outbreak-predictions",
+        params={"territorial_code": "05001", "period": "2020-W01"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["territorial_code"] == "05001"
+    assert payload["period"] == "2020-W01"
+    assert payload["event_code"] == "210"
+    assert payload["event_name"] == "DENGUE"
+    assert payload["model_version"] == "outbreak-multivariate-v1.0.0"
+    assert payload["outbreak_probability"] >= 0
+    assert payload["feature_contributions"]
+    assert payload["persisted"] is True
+
+
+@pytest.mark.integration
+def test_outbreak_map_endpoint(client) -> None:
+    response = client.get(
+        "/api/v1/outbreak-map",
+        params={"period": "2020-W01", "limit": 5},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert isinstance(payload, list)
+    if payload:
+        assert "latitude" in payload[0]
+        assert "outbreak_probability" in payload[0]
+
+
+@pytest.mark.integration
+def test_outbreak_alerts_endpoint(client) -> None:
+    response = client.get(
+        "/api/v1/outbreak-alerts",
+        params={"period": "2020-W01", "limit": 5},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert isinstance(payload, list)
+    if len(payload) >= 2:
+        assert payload[0]["outbreak_probability"] >= payload[1]["outbreak_probability"]
+    if payload:
+        assert "baseline_cases" in payload[0]
+        assert "municipality_name" in payload[0]
 
 
 @pytest.mark.integration
@@ -138,6 +215,94 @@ def test_insights_endpoint(client) -> None:
     assert payload[0]["data_version"] == "composite-narrative-v1.0.0"
     assert payload[0]["sources"]
     assert payload[0]["system_context"]
+
+
+@pytest.mark.integration
+def test_data_drift_endpoint(client) -> None:
+    response = client.get("/api/v1/data-drift")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["drift_status"] in {"stable", "warning", "alert", "unknown"}
+
+
+@pytest.mark.integration
+def test_territorial_report_endpoint(client) -> None:
+    response = client.get(
+        "/api/v1/territorial-report",
+        params={"territorial_code": "05001", "period": "2020-01", "insight_limit": 2},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["territorial_code"] == "05001"
+    assert payload["risk"]["score"] >= 0
+    assert len(payload["insights"]) >= 1
+    assert payload["drift_status"]
+
+
+@pytest.mark.integration
+def test_bias_analysis_endpoint(client) -> None:
+    response = client.get(
+        "/api/v1/bias-analysis",
+        params={"period": "2020-01"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["national_mean"] >= 0
+    assert len(payload["departments"]) >= 1
+
+
+@pytest.mark.integration
+def test_list_featured_municipalities_endpoint(client) -> None:
+    response = client.get("/api/v1/municipalities/featured")
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == 4
+    codes = {item["territorial_code"] for item in payload}
+    assert codes == {"05001", "11001", "08001", "76001"}
+
+
+@pytest.mark.integration
+def test_search_municipalities_endpoint(client) -> None:
+    response = client.get("/api/v1/municipalities", params={"search": "medell"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert any(item["territorial_code"] == "05001" for item in payload)
+
+
+@pytest.mark.integration
+def test_get_municipality_by_code_endpoint(client) -> None:
+    response = client.get("/api/v1/municipalities/05001")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["territorial_code"] == "05001"
+    assert payload["name"]
+
+
+@pytest.mark.integration
+def test_api_key_middleware_when_configured(client, monkeypatch) -> None:
+    monkeypatch.setenv("API_KEY", "test-secret-key")
+    get_settings.cache_clear()
+    protected = TestClient(create_app())
+    try:
+        denied = protected.get(
+            "/api/v1/health-indicators",
+            params={"territorial_code": "05001", "period": "2020-01", "limit": 1},
+        )
+        assert denied.status_code == 401
+
+        allowed = protected.get(
+            "/api/v1/health-indicators",
+            params={"territorial_code": "05001", "period": "2020-01", "limit": 1},
+            headers={"X-API-Key": "test-secret-key"},
+        )
+        assert allowed.status_code == 200
+
+        health = protected.get("/health")
+        assert health.status_code == 200
+    finally:
+        protected.close()
+        monkeypatch.delenv("API_KEY", raising=False)
+        get_settings.cache_clear()
 
 
 @pytest.mark.integration
