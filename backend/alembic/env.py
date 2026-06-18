@@ -24,6 +24,9 @@ from modules.epidemiological_surveillance.infrastructure.persistence.orm_models 
     HealthIndicatorObservationRow,
     IngestionRunRow,
 )
+from modules.outbreak_prediction.infrastructure.persistence.orm_models import (  # noqa: E402, F401
+    OutbreakPredictionRow,
+)
 
 database_url = os.environ.get("DATABASE_URL")
 if not database_url:
