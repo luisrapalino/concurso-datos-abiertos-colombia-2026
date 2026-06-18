@@ -4,11 +4,11 @@ from decimal import Decimal
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from modules.epidemiological_surveillance.application.normalization import (
-    annual_period,
-    observation_id,
+from modules.epidemiological_surveillance.application.normalization import observation_id
+from modules.epidemiological_surveillance.domain.records import (
+    RawHealthIndicatorRecord,
+    RawMortalityIndicatorRecord,
 )
-from modules.epidemiological_surveillance.domain.records import RawMortalityIndicatorRecord
 from modules.epidemiological_surveillance.infrastructure.persistence.orm_models import (
     HealthIndicatorObservationRow,
     IngestionRunRow,
@@ -62,36 +62,44 @@ class SqlAlchemyIngestionRepository:
         run_id: str,
         source_id: str,
         definition_id: str,
-        records: list[RawMortalityIndicatorRecord],
+        records: list[RawHealthIndicatorRecord | RawMortalityIndicatorRecord],
     ) -> int:
         del source_id
         if not records:
             return 0
+
+        normalized_records = [
+            record.to_health_record() if isinstance(record, RawMortalityIndicatorRecord) else record
+            for record in records
+        ]
 
         rows = [
             {
                 "id": observation_id(
                     definition_id,
                     record.territorial_code,
-                    annual_period(record.year),
+                    record.period,
                 ),
                 "definition_id": definition_id,
                 "territorial_code": record.territorial_code,
-                "period": annual_period(record.year),
+                "period": record.period,
                 "value": Decimal(record.value),
                 "ingestion_run_id": run_id,
             }
-            for record in records
+            for record in normalized_records
         ]
 
-        stmt = insert(HealthIndicatorObservationRow).values(rows)
-        stmt = stmt.on_conflict_do_update(
-            index_elements=["definition_id", "territorial_code", "period"],
-            set_={
-                "value": stmt.excluded.value,
-                "ingestion_run_id": stmt.excluded.ingestion_run_id,
-            },
-        )
-        self._session.execute(stmt)
+        batch_size = 1000
+        for offset in range(0, len(rows), batch_size):
+            batch = rows[offset : offset + batch_size]
+            stmt = insert(HealthIndicatorObservationRow).values(batch)
+            stmt = stmt.on_conflict_do_update(
+                index_elements=["definition_id", "territorial_code", "period"],
+                set_={
+                    "value": stmt.excluded.value,
+                    "ingestion_run_id": stmt.excluded.ingestion_run_id,
+                },
+            )
+            self._session.execute(stmt)
         self._session.commit()
         return len(rows)

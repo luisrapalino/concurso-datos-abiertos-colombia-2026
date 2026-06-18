@@ -1,14 +1,19 @@
-from modules.epidemiological_surveillance.domain.records import RawMortalityIndicatorRecord
+from modules.epidemiological_surveillance.domain.records import (
+    RawHealthIndicatorRecord,
+    RawMortalityIndicatorRecord,
+)
 from shared.divipola_catalog import TerritorialCatalog, TerritorialValidationSummary
+
+TerritorialRecord = RawHealthIndicatorRecord | RawMortalityIndicatorRecord
 
 
 def partition_records_by_catalog(
-    records: list[RawMortalityIndicatorRecord],
+    records: list[TerritorialRecord],
     catalog: TerritorialCatalog,
     *,
     max_rejected_samples: int = 20,
-) -> tuple[list[RawMortalityIndicatorRecord], TerritorialValidationSummary]:
-    accepted: list[RawMortalityIndicatorRecord] = []
+) -> tuple[list[TerritorialRecord], TerritorialValidationSummary]:
+    accepted: list[TerritorialRecord] = []
     rejected_codes: list[str] = []
 
     for record in records:

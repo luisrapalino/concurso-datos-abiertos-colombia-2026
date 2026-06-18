@@ -8,6 +8,7 @@ from modules.epidemiological_surveillance.domain.records import RawMortalityIndi
 
 DEFAULT_BASE_URL = "https://www.datos.gov.co/resource/4e4i-ua65.json"
 GENERAL_MORTALITY_INDICATOR = "TASA DE MORTALIDAD GENERAL"
+INSTITUTIONAL_BIRTHS_INDICATOR = "PORCENTAJE DE PARTOS INSTITUCIONALES"
 
 
 class DatosGovCoMortalityClient:
@@ -28,6 +29,7 @@ class DatosGovCoMortalityClient:
         self,
         *,
         year: int | None = None,
+        territorial_code: str | None = None,
         limit: int = 5000,
         offset: int = 0,
         http_client: httpx.Client | None = None,
@@ -40,6 +42,8 @@ class DatosGovCoMortalityClient:
         }
         if year is not None:
             params["a_o"] = str(year)
+        if territorial_code is not None:
+            params["codmunicipio"] = territorial_code
 
         if http_client is not None:
             response = http_client.get(self._base_url, params=params)

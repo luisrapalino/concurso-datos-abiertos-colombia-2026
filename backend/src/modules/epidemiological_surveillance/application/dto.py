@@ -16,7 +16,7 @@ class DataFreshnessReadDto(BaseModel):
     source_name: str
     last_successful_ingestion_at: datetime | None = None
     records_upserted: int | None = None
-    latest_period_available: Period | None = None
+    latest_period_available: str | None = None
     coverage_note: str = Field(
         default="Coverage depends on published open data; gaps must be interpreted cautiously.",
     )

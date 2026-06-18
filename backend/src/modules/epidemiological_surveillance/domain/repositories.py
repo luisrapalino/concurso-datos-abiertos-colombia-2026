@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 from typing import Protocol
 
-from modules.epidemiological_surveillance.domain.records import RawMortalityIndicatorRecord
+from modules.epidemiological_surveillance.domain.records import (
+    RawHealthIndicatorRecord,
+    RawMortalityIndicatorRecord,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -10,6 +13,28 @@ class IngestionResult:
     records_upserted: int
     records_rejected: int = 0
     rejected_territorial_codes: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class SyncIngestionResult:
+    run_id: str
+    records_upserted: int
+    records_rejected: int
+    batches_processed: int
+    years_processed: tuple[int, ...]
+    rejected_territorial_codes: tuple[str, ...] = ()
+
+
+class HealthIndicatorsSourceClient(Protocol):
+    def fetch_records(
+        self,
+        *,
+        year: int | None = None,
+        territorial_code: str | None = None,
+        limit: int = 5000,
+        offset: int = 0,
+    ) -> list[RawHealthIndicatorRecord]:
+        """Fetch normalized health indicator records from the external source."""
 
 
 class MortalityIndicatorsSourceClient(Protocol):
@@ -39,6 +64,6 @@ class IngestionRepository(Protocol):
         run_id: str,
         source_id: str,
         definition_id: str,
-        records: list[RawMortalityIndicatorRecord],
+        records: list[RawHealthIndicatorRecord | RawMortalityIndicatorRecord],
     ) -> int:
         """Persist observations idempotently and return upsert count."""

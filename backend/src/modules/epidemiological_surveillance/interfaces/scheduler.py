@@ -1,4 +1,4 @@
-"""Scheduled ingestion worker for epidemiological surveillance sources."""
+"""Scheduled incremental sync worker for open data sources."""
 
 from __future__ import annotations
 
@@ -10,20 +10,18 @@ from collections.abc import Callable
 
 from config.settings import Settings, get_settings
 from infrastructure.persistence.database import dispose_engine, get_session, init_engine
-from modules.epidemiological_surveillance.application.ingest_mortality_indicators import (
-    IngestMortalityIndicatorsUseCase,
-)
-from modules.epidemiological_surveillance.application.normalization import (
-    IngestMortalityIndicatorsCommand,
+from modules.epidemiological_surveillance.application.sync_ingest_health_indicators import (
+    SyncIngestHealthIndicatorsUseCase,
 )
 from modules.epidemiological_surveillance.infrastructure.persistence.sqlalchemy_ingestion_repository import (  # noqa: E501
     SqlAlchemyIngestionRepository,
 )
-from modules.epidemiological_surveillance.infrastructure.sources.datos_gov_co_client import (
-    GENERAL_MORTALITY_INDICATOR,
-    DatosGovCoMortalityClient,
+from modules.epidemiological_surveillance.interfaces.cli import (
+    SYNC_SOURCE_ORDER,
+    SOURCE_REGISTRY,
+    _build_source_client,
+    _build_sync_command,
 )
-from modules.epidemiological_surveillance.interfaces.cli import SOURCE_REGISTRY
 from shared.divipola_catalog import DivipolaCatalog
 
 _shutdown_requested = False
@@ -34,68 +32,63 @@ def _handle_shutdown_signal(_signum: int, _frame: object | None) -> None:
     _shutdown_requested = True
 
 
-def parse_years(raw_years: str) -> tuple[int, ...]:
-    years = tuple(int(value.strip()) for value in raw_years.split(",") if value.strip())
-    if not years:
-        msg = "At least one year must be provided for scheduled ingestion."
-        raise ValueError(msg)
-    return years
-
-
-def build_ingestion_command(settings: Settings) -> IngestMortalityIndicatorsCommand:
-    registry = SOURCE_REGISTRY["datos-gov-mortality-indicators"]
-    years = parse_years(settings.ingestion_default_years)
-    return IngestMortalityIndicatorsCommand(
-        source_id=registry["source_id"],
-        definition_id=registry["definition_id"],
-        source_indicator_key=registry["source_indicator_key"],
-        years=years,
-        limit=settings.ingestion_default_limit,
-        validate_territorial_codes=settings.ingestion_validate_territorial_codes,
-    )
-
-
-def run_ingestion_once(settings: Settings) -> None:
+def run_sync_once(settings: Settings) -> None:
     catalog = DivipolaCatalog.from_file(settings.divipola_catalog_path)
     init_engine(settings.database_url)
-    session_gen = get_session()
-    session = next(session_gen)
-    try:
-        use_case = IngestMortalityIndicatorsUseCase(
-            source_client=DatosGovCoMortalityClient(
-                source_indicator_key=GENERAL_MORTALITY_INDICATOR,
-            ),
-            repository=SqlAlchemyIngestionRepository(session),
-            territorial_catalog=catalog,
-        )
-        result = use_case.execute(build_ingestion_command(settings))
-    finally:
-        session_gen.close()
-        dispose_engine()
 
-    rejected_codes = ",".join(result.rejected_territorial_codes) or "-"
-    print(
-        "Scheduled ingestion completed: "
-        f"run_id={result.run_id} "
-        f"records_upserted={result.records_upserted} "
-        f"records_rejected={result.records_rejected} "
-        f"rejected_codes={rejected_codes}",
-        flush=True,
-    )
+    for source_key in SYNC_SOURCE_ORDER:
+        if _shutdown_requested:
+            break
+
+        registry = SOURCE_REGISTRY[source_key]
+        session_gen = get_session()
+        session = next(session_gen)
+        try:
+            use_case = SyncIngestHealthIndicatorsUseCase(
+                source_client=_build_source_client(registry, catalog=catalog),
+                repository=SqlAlchemyIngestionRepository(session),
+                territorial_catalog=catalog,
+            )
+            args = argparse.Namespace(
+                source=source_key,
+                batch_size=settings.ingestion_batch_size,
+                start_year=None,
+                end_year=settings.ingestion_end_year,
+                all_municipalities=False,
+                territorial_codes=None,
+                max_batches=None,
+                dry_run=False,
+                skip_territorial_validation=not settings.ingestion_validate_territorial_codes,
+            )
+            result = use_case.execute(
+                _build_sync_command(registry, args, settings),
+                progress=lambda message: print(message, flush=True),
+            )
+        finally:
+            session_gen.close()
+
+        print(
+            f"Scheduled sync completed for {source_key}: "
+            f"batches={result.batches_processed} "
+            f"records_upserted={result.records_upserted}",
+            flush=True,
+        )
+
+    dispose_engine()
 
 
 def run_scheduler_loop(
     settings: Settings,
     *,
     sleep_fn: Callable[[float], None] = time.sleep,
-    run_once_fn: Callable[[Settings], None] = run_ingestion_once,
+    run_once_fn: Callable[[Settings], None] = run_sync_once,
 ) -> int:
     interval_seconds = settings.ingestion_interval_hours * 3600
     print(
-        "Starting ingestion scheduler: "
+        "Starting incremental sync scheduler: "
         f"interval_hours={settings.ingestion_interval_hours} "
-        f"years={settings.ingestion_default_years} "
-        f"limit={settings.ingestion_default_limit}",
+        f"batch_size={settings.ingestion_batch_size} "
+        f"end_year={settings.ingestion_end_year}",
         flush=True,
     )
 
@@ -109,16 +102,16 @@ def run_scheduler_loop(
             sleep_fn(min(60.0, interval_seconds - slept))
             slept += min(60.0, interval_seconds - slept)
 
-    print("Ingestion scheduler stopped.", flush=True)
+    print("Incremental sync scheduler stopped.", flush=True)
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Scheduled epidemiological ingestion worker")
+    parser = argparse.ArgumentParser(description="Scheduled incremental open-data sync worker")
     parser.add_argument(
         "--once",
         action="store_true",
-        help="Run a single ingestion cycle and exit",
+        help="Run a single sync cycle and exit",
     )
     return parser
 
@@ -136,7 +129,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.once:
-        run_ingestion_once(settings)
+        run_sync_once(settings)
         return 0
 
     return run_scheduler_loop(settings)

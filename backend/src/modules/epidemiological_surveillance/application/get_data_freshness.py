@@ -8,6 +8,13 @@ from modules.epidemiological_surveillance.infrastructure.persistence.orm_models 
     IngestionRunRow,
     IngestionRunStatus,
 )
+from shared.sivigila_events import sivigila_definition_ids
+
+SOURCE_DEFINITION_MAP: dict[str, str] = {
+    "datos-gov-mortality-indicators": "general-mortality-rate",
+    "datos-gov-vaccination-coverage": "dpta-penta-vaccination-coverage",
+    "datos-gov-air-quality": "pm25-annual-mean",
+}
 
 
 class GetDataFreshnessUseCase:
@@ -30,11 +37,26 @@ class GetDataFreshnessUseCase:
             .limit(1),
         ).first()
 
-        latest_period = self._session.scalar(
-            select(func.max(HealthIndicatorObservationRow.period)).where(
-                HealthIndicatorObservationRow.definition_id == "general-mortality-rate",
-            ),
-        )
+        if source_id == "datos-gov-sivigila":
+            definition_ids = sivigila_definition_ids()
+            latest_period = self._session.scalar(
+                select(func.max(HealthIndicatorObservationRow.period)).where(
+                    HealthIndicatorObservationRow.definition_id.in_(definition_ids),
+                ),
+            )
+            records_upserted = self._session.scalar(
+                select(func.count()).where(
+                    HealthIndicatorObservationRow.definition_id.in_(definition_ids),
+                ),
+            )
+        else:
+            definition_id = SOURCE_DEFINITION_MAP.get(source_id, "general-mortality-rate")
+            latest_period = self._session.scalar(
+                select(func.max(HealthIndicatorObservationRow.period)).where(
+                    HealthIndicatorObservationRow.definition_id == definition_id,
+                ),
+            )
+            records_upserted = latest_run.records_upserted if latest_run is not None else None
 
         return DataFreshnessReadDto(
             source_id=source_id,
@@ -42,8 +64,6 @@ class GetDataFreshnessUseCase:
             last_successful_ingestion_at=(
                 latest_run.finished_at if latest_run is not None else None
             ),
-            records_upserted=(
-                latest_run.records_upserted if latest_run is not None else None
-            ),
+            records_upserted=records_upserted,
             latest_period_available=latest_period,
         )
