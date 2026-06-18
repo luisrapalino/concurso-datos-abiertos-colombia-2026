@@ -17,11 +17,11 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Radar", description: "Ranking territorial", icon: Home },
-  { href: "/brotes", label: "Ficha", description: "Señal y factores", icon: Bug },
-  { href: "/mapa", label: "Mapa", description: "Vista geográfica", icon: Map },
-  { href: "/informe", label: "Informe", description: "Resumen exportable", icon: FileText },
-  { href: "/datos", label: "Datos", description: "Fuentes abiertas", icon: Database },
+  { href: "/", label: "Radar", icon: Home },
+  { href: "/brotes", label: "Ficha", icon: Bug },
+  { href: "/mapa", label: "Mapa", icon: Map },
+  { href: "/informe", label: "Informe", icon: FileText },
+  { href: "/datos", label: "Datos", icon: Database },
 ];
 
 export function AppSidebar() {
@@ -40,12 +40,19 @@ export function AppSidebar() {
         if (!isMobile) setHoverOpen(false);
       }}
     >
-      <SidebarHeader className="shrink-0 border-b border-sidebar-border px-4 py-5 group-data-[collapsible=icon]:border-b-0 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3">
-        <div className="flex w-full items-center gap-3 group-data-[collapsible=icon]:justify-center">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-sm group-data-[collapsible=icon]:size-8">
-            <Bug className="size-4" />
+      <SidebarHeader className="shrink-0 border-b border-sidebar-border px-2 py-3 group-data-[collapsible=icon]:border-b-0">
+        <div className="flex min-w-0 items-center">
+          <div className="flex size-10 shrink-0 items-center justify-center">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-sm">
+              <Bug className="size-4" />
+            </div>
           </div>
-          <div className="min-w-0 space-y-0.5 group-data-[collapsible=icon]:hidden">
+          <div
+            className={cn(
+              "min-w-0 overflow-hidden pl-1 transition-[opacity,width] duration-200 ease-linear",
+              isCollapsed ? "w-0 opacity-0" : "flex-1 opacity-100",
+            )}
+          >
             <p className="truncate font-heading text-sm font-semibold leading-snug text-sidebar-foreground">
               Radar de brotes
             </p>
@@ -56,41 +63,34 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="px-1 pt-3 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:pt-2">
-        <SidebarGroup className="px-3 py-0 group-data-[collapsible=icon]:px-0">
-          <SidebarGroupContent className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center">
-            <SidebarMenu className="gap-1.5 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:gap-2">
-              {navItems.map(({ href, label, description, icon: Icon }) => {
+      <SidebarContent className="px-2 pt-3">
+        <SidebarGroup className="px-0 py-0">
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1.5">
+              {navItems.map(({ href, label, icon: Icon }) => {
                 const isActive = pathname === href;
                 return (
-                  <SidebarMenuItem
-                    key={href}
-                    className="group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center"
-                  >
+                  <SidebarMenuItem key={href}>
                     <SidebarMenuButton
                       render={<Link href={href} />}
                       isActive={isActive}
                       tooltip={isCollapsed ? label : undefined}
                       className={cn(
-                        "h-auto min-h-12 gap-3 rounded-lg px-3 py-2.5",
+                        "h-10 w-full gap-0 rounded-lg px-0",
+                        "group-data-[collapsible=icon]:size-auto! group-data-[collapsible=icon]:h-10! group-data-[collapsible=icon]:w-full! group-data-[collapsible=icon]:p-0!",
                         "data-active:bg-sidebar-primary data-active:text-sidebar-primary-foreground",
-                        "group-data-[collapsible=icon]:!size-10 group-data-[collapsible=icon]:!min-h-0",
-                        "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:!p-0",
                       )}
                     >
-                      <Icon className="size-[1.125rem] shrink-0" />
-                      <span className="flex min-w-0 flex-col items-start gap-0.5 leading-none group-data-[collapsible=icon]:hidden">
-                        <span className="text-sm font-medium leading-snug">{label}</span>
-                        <span
-                          className={cn(
-                            "text-[11px] font-normal leading-snug",
-                            isActive
-                              ? "text-sidebar-primary-foreground/80"
-                              : "text-sidebar-foreground/55",
-                          )}
-                        >
-                          {description}
-                        </span>
+                      <span className="flex size-10 shrink-0 items-center justify-center">
+                        <Icon className="size-4.5" />
+                      </span>
+                      <span
+                        className={cn(
+                          "min-w-0 truncate text-sm font-medium transition-[opacity,width] duration-200 ease-linear",
+                          isCollapsed ? "w-0 opacity-0" : "flex-1 pr-2 opacity-100",
+                        )}
+                      >
+                        {label}
                       </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

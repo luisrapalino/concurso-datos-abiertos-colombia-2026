@@ -37,11 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     >
       <AppSidebar />
       <SidebarInset className="topography-surface">
-        <header className="app-chrome flex h-14 shrink-0 items-center border-b border-border/60 bg-card/70 px-5 backdrop-blur-sm md:px-8">
-          <ContentColumn className="flex-row items-center justify-end">
-            <ThemeToggle />
-          </ContentColumn>
-        </header>
+        <ThemeToggle />
 
         <div className="flex flex-1 flex-col px-5 py-6 md:px-8 md:py-8 print:p-0">
           <ContentColumn>
