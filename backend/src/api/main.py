@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
 from api.exception_handlers import register_exception_handlers
+from api.middleware.api_key import ApiKeyMiddleware
 from api.middleware.rate_limit import RateLimitMiddleware
 from api.middleware.request_logging import RequestLoggingMiddleware
 from api.middleware.security_headers import SecurityHeadersMiddleware
@@ -39,6 +40,7 @@ def create_app() -> FastAPI:
 
     register_exception_handlers(application)
 
+    application.add_middleware(ApiKeyMiddleware, api_key=settings.api_key)
     application.add_middleware(SecurityHeadersMiddleware)
     application.add_middleware(RequestLoggingMiddleware)
     if settings.rate_limit_enabled:
