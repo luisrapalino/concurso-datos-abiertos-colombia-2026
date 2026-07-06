@@ -1,9 +1,15 @@
 FROM node:22-alpine AS base
 WORKDIR /app
+# Red de registro npm inestable en builds Docker: más tiempo y reintentos
+RUN npm config set fetch-timeout 600000 \
+  && npm config set fetch-retries 5 \
+  && npm config set fetch-retry-mintimeout 20000 \
+  && npm config set fetch-retry-maxtimeout 120000
 
 FROM base AS deps
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+  npm ci --prefer-offline --no-audit --no-fund
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules

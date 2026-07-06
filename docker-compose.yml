@@ -23,6 +23,12 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://epintel:epintel@db:5432/epintel
       CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      SOCRATA_APP_TOKEN: ${SOCRATA_APP_TOKEN:-}
+      INGESTION_BATCH_SIZE: ${INGESTION_BATCH_SIZE:-1000}
+      INGESTION_END_YEAR: ${INGESTION_END_YEAR:-2018}
+      INGESTION_VALIDATE_TERRITORIAL_CODES: ${INGESTION_VALIDATE_TERRITORIAL_CODES:-true}
+    volumes:
+      - ./backend/ml/artifacts:/app/ml/artifacts
     depends_on:
       db:
         condition: service_healthy
@@ -54,6 +60,10 @@ services:
       INGESTION_INTERVAL_HOURS: "24"
       INGESTION_DEFAULT_YEARS: "2018,2019,2020"
       INGESTION_DEFAULT_LIMIT: "15000"
+      INGESTION_BATCH_SIZE: "1000"
+      INGESTION_END_YEAR: "2018"
+      INGESTION_VALIDATE_TERRITORIAL_CODES: "true"
+      SOCRATA_APP_TOKEN: ${SOCRATA_APP_TOKEN:-}
     depends_on:
       db:
         condition: service_healthy

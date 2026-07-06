@@ -16,6 +16,8 @@ COPY ml ./ml
 COPY alembic.ini .
 COPY alembic ./alembic
 
+RUN mkdir -p /app/ml/artifacts && chown -R appuser:appuser /app/ml /app/data
+
 ENV PYTHONPATH=/app/src
 
 USER appuser
