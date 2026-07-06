@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from collections import defaultdict
 from decimal import Decimal
 
@@ -10,12 +9,12 @@ from modules.epidemiological_surveillance.application.normalization import annua
 from modules.epidemiological_surveillance.domain.records import RawHealthIndicatorRecord
 from shared.divipola_catalog import DivipolaCatalog
 from shared.featured_municipalities import FEATURED_MUNICIPALITY_CODES
+from shared.socrata_client import SocrataHttpClient
 
 DEFAULT_BASE_URL = "https://www.datos.gov.co/resource/kekd-7v7h.json"
 PM25_VARIABLE = "PM2.5"
 DAILY_EXPOSURE_HOURS = "24"
-MAX_RETRIES = 5
-RETRY_BACKOFF_SECONDS = 5.0
+AIR_QUALITY_SELECT = "a_o,promedio,nombre_del_municipio,id_estacion"
 
 
 class AirQualityClient:
@@ -27,12 +26,13 @@ class AirQualityClient:
         base_url: str = DEFAULT_BASE_URL,
         territorial_catalog: DivipolaCatalog | None = None,
         timeout_seconds: float = 120.0,
-        max_retries: int = MAX_RETRIES,
+        socrata_client: SocrataHttpClient | None = None,
     ) -> None:
         self._base_url = base_url
         self._territorial_catalog = territorial_catalog
-        self._timeout_seconds = timeout_seconds
-        self._max_retries = max_retries
+        self._socrata = socrata_client or SocrataHttpClient.from_settings(
+            timeout_seconds=timeout_seconds,
+        )
 
     def fetch_records(
         self,
@@ -64,20 +64,15 @@ class AirQualityClient:
             "$limit": limit,
             "$offset": offset,
             "$order": "a_o, id_estacion",
+            "$select": AIR_QUALITY_SELECT,
             "$where": _build_where_clause(
                 territorial_code=territorial_code,
                 year=year,
             ),
         }
 
-        if http_client is not None:
-            response = http_client.get(self._base_url, params=params)
-        else:
-            response = self._get_with_retry(params)
-
-        response.raise_for_status()
-        payload = response.json()
-        if not payload:
+        payload = self._socrata.get_json(self._base_url, params, http_client=http_client)
+        if not isinstance(payload, list) or not payload:
             return []
 
         normalized_code = territorial_code.strip().zfill(5)
@@ -107,30 +102,9 @@ class AirQualityClient:
                     source_indicator_key="pm25",
                     period=annual_period(event_year),
                     value=mean_value.quantize(Decimal("0.0001")),
-                ),
+                )
             )
         return records
-
-    def _get_with_retry(self, params: dict[str, str | int]) -> httpx.Response:
-        last_error: Exception | None = None
-        for attempt in range(self._max_retries):
-            try:
-                with httpx.Client(timeout=self._timeout_seconds) as client:
-                    response = client.get(self._base_url, params=params)
-                if response.status_code < 500:
-                    return response
-                last_error = httpx.HTTPStatusError(
-                    f"Server error '{response.status_code}'",
-                    request=response.request,
-                    response=response,
-                )
-            except (httpx.ReadTimeout, httpx.ConnectTimeout, httpx.NetworkError) as exc:
-                last_error = exc
-            if attempt + 1 >= self._max_retries:
-                break
-            time.sleep(RETRY_BACKOFF_SECONDS * (2**attempt))
-        assert last_error is not None
-        raise last_error
 
 
 def _build_where_clause(*, territorial_code: str, year: int | None) -> str:

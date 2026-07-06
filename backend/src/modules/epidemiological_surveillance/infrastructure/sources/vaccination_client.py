@@ -6,9 +6,11 @@ from modules.epidemiological_surveillance.application.normalization import annua
 from modules.epidemiological_surveillance.domain.records import RawHealthIndicatorRecord
 from shared.divipola_catalog import DivipolaCatalog
 from shared.featured_municipalities import is_featured_municipality
+from shared.socrata_client import SocrataHttpClient
 
 DEFAULT_BASE_URL = "https://www.datos.gov.co/resource/6i25-2hdt.json"
 PENTAVALENT_VACCINE = "PENTA3"
+VACCINATION_SELECT = "coddepto,departamento,biol_gico,a_o,cobertura_de_vacunaci_n"
 
 
 class VaccinationCoverageClient:
@@ -21,11 +23,14 @@ class VaccinationCoverageClient:
         vaccine_name: str = PENTAVALENT_VACCINE,
         territorial_catalog: DivipolaCatalog | None = None,
         timeout_seconds: float = 120.0,
+        socrata_client: SocrataHttpClient | None = None,
     ) -> None:
         self._base_url = base_url
         self._vaccine_name = vaccine_name
         self._territorial_catalog = territorial_catalog
-        self._timeout_seconds = timeout_seconds
+        self._socrata = socrata_client or SocrataHttpClient.from_settings(
+            timeout_seconds=timeout_seconds,
+        )
 
     def fetch_records(
         self,
@@ -40,18 +45,15 @@ class VaccinationCoverageClient:
             "$limit": limit,
             "$offset": offset,
             "$order": "coddepto,a_o",
+            "$select": VACCINATION_SELECT,
         }
         if year is not None:
             params["a_o"] = str(year)
 
-        if http_client is not None:
-            response = http_client.get(self._base_url, params=params)
-        else:
-            with httpx.Client(timeout=self._timeout_seconds) as client:
-                response = client.get(self._base_url, params=params)
-
-        response.raise_for_status()
-        payload = response.json()
+        payload = self._socrata.get_json(self._base_url, params, http_client=http_client)
+        if not isinstance(payload, list):
+            msg = f"Expected list payload from Socrata API, got {type(payload)!r}"
+            raise TypeError(msg)
 
         if self._territorial_catalog is None:
             msg = "DIVIPOLA catalog is required to expand departmental vaccination coverage."
@@ -84,7 +86,7 @@ class VaccinationCoverageClient:
             for municipality_code in municipality_codes:
                 if target_municipality is not None and municipality_code != target_municipality:
                     continue
-                if not is_featured_municipality(municipality_code):
+                if target_municipality is None and not is_featured_municipality(municipality_code):
                     continue
                 records.append(
                     RawHealthIndicatorRecord(

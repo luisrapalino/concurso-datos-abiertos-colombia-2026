@@ -5,10 +5,12 @@ from modules.epidemiological_surveillance.application.normalization import (
     normalize_territorial_code,
 )
 from modules.epidemiological_surveillance.domain.records import RawMortalityIndicatorRecord
+from shared.socrata_client import SocrataHttpClient
 
 DEFAULT_BASE_URL = "https://www.datos.gov.co/resource/4e4i-ua65.json"
 GENERAL_MORTALITY_INDICATOR = "TASA DE MORTALIDAD GENERAL"
 INSTITUTIONAL_BIRTHS_INDICATOR = "PORCENTAJE DE PARTOS INSTITUCIONALES"
+MORTALITY_SELECT = "codmunicipio,municipio,a_o,valor_indicador"
 
 
 class DatosGovCoMortalityClient:
@@ -20,10 +22,13 @@ class DatosGovCoMortalityClient:
         base_url: str = DEFAULT_BASE_URL,
         source_indicator_key: str = GENERAL_MORTALITY_INDICATOR,
         timeout_seconds: float = 60.0,
+        socrata_client: SocrataHttpClient | None = None,
     ) -> None:
         self._base_url = base_url
         self._source_indicator_key = source_indicator_key
-        self._timeout_seconds = timeout_seconds
+        self._socrata = socrata_client or SocrataHttpClient.from_settings(
+            timeout_seconds=timeout_seconds,
+        )
 
     def fetch_general_mortality_records(
         self,
@@ -38,6 +43,7 @@ class DatosGovCoMortalityClient:
             "$limit": limit,
             "$offset": offset,
             "$order": "codmunicipio,a_o",
+            "$select": MORTALITY_SELECT,
             "indicador": self._source_indicator_key,
         }
         if year is not None:
@@ -45,14 +51,10 @@ class DatosGovCoMortalityClient:
         if territorial_code is not None:
             params["codmunicipio"] = territorial_code
 
-        if http_client is not None:
-            response = http_client.get(self._base_url, params=params)
-        else:
-            with httpx.Client(timeout=self._timeout_seconds) as client:
-                response = client.get(self._base_url, params=params)
-
-        response.raise_for_status()
-        payload = response.json()
+        payload = self._socrata.get_json(self._base_url, params, http_client=http_client)
+        if not isinstance(payload, list):
+            msg = f"Expected list payload from Socrata API, got {type(payload)!r}"
+            raise TypeError(msg)
 
         records: list[RawMortalityIndicatorRecord] = []
         for row in payload:

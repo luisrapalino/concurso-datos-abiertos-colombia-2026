@@ -13,8 +13,10 @@ from modules.epidemiological_surveillance.application.normalization import annua
 from modules.epidemiological_surveillance.domain.records import RawHealthIndicatorRecord
 from shared.divipola_catalog import DivipolaCatalog
 from shared.municipal_dataset_catalog import API_AIR_SISAIRE
+from shared.socrata_client import SocrataHttpClient
 
 DEFAULT_BASE_URL = API_AIR_SISAIRE
+SISAIRE_SELECT = "fecha_lectura,pm25,pm10,estacion"
 
 
 class SisaireAirQualityClient:
@@ -26,10 +28,13 @@ class SisaireAirQualityClient:
         base_url: str = DEFAULT_BASE_URL,
         territorial_catalog: DivipolaCatalog | None = None,
         timeout_seconds: float = 120.0,
+        socrata_client: SocrataHttpClient | None = None,
     ) -> None:
         self._base_url = base_url
         self._territorial_catalog = territorial_catalog
-        self._timeout_seconds = timeout_seconds
+        self._socrata = socrata_client or SocrataHttpClient.from_settings(
+            timeout_seconds=timeout_seconds,
+        )
 
     def fetch_records(
         self,
@@ -67,18 +72,12 @@ class SisaireAirQualityClient:
             "$limit": limit,
             "$offset": offset,
             "$order": "fecha_lectura",
+            "$select": SISAIRE_SELECT,
             "$where": " AND ".join(where_parts),
         }
 
-        if http_client is not None:
-            response = http_client.get(self._base_url, params=params)
-        else:
-            with httpx.Client(timeout=self._timeout_seconds) as client:
-                response = client.get(self._base_url, params=params)
-
-        response.raise_for_status()
-        payload = response.json()
-        if not payload:
+        payload = self._socrata.get_json(self._base_url, params, http_client=http_client)
+        if not isinstance(payload, list) or not payload:
             return []
 
         year_values: dict[int, list[Decimal]] = defaultdict(list)
@@ -106,7 +105,7 @@ class SisaireAirQualityClient:
                     source_indicator_key="pm25",
                     period=annual_period(event_year),
                     value=mean_value.quantize(Decimal("0.0001")),
-                ),
+                )
             )
         return records
 

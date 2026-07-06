@@ -24,7 +24,7 @@ class SyncIngestHealthIndicatorsCommand:
     sync_strategy: str
     batch_size: int = 1000
     start_year: int | None = None
-    end_year: int = 2015
+    end_year: int = 2018
     territorial_codes: tuple[str, ...] | None = None
     dry_run: bool = False
     validate_territorial_codes: bool = True
