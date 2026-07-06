@@ -6,14 +6,36 @@ Documento de referencia para las fases 5 y 8 del roadmap.
 
 | Capacidad | Versión | Método | Evaluación |
 |-----------|---------|--------|------------|
-| **Predicción de brotes (principal)** | `outbreak-multivariate-v1.0.0` | Score multivariado: casos SIVIGILA + vacunación + acceso + PM2.5 | Contribuciones por feature |
+| **Predicción de brotes (principal)** | `randomforest-outbreak-v1.0.0` | Random Forest (15 features) + SHAP TreeExplainer | Validación temporal train ≤2020 / test ≥2021 |
+| Predicción de brotes (fallback) | `outbreak-multivariate-v1.0.0` | Score multivariado rule-based | Contribuciones determinísticas |
 | Riesgo territorial (contexto) | `mortality-relative-v1.0.0` | Score relativo vs mediana nacional | Descomposición rule-based |
-| Riesgo territorial (promovido) | `ridge-mortality-risk-v1.0.0` | Ridge sobre panel mortalidad | SHAP en serving |
+| Riesgo territorial (promovido) | `ridge-mortality-risk-v1.0.0` | Ridge sobre panel mortalidad | SHAP LinearExplainer |
 | Anomalías | `outbreak-cases-median-v1.0.0` | Ratio casos dengue vs mediana del periodo | Umbrales 1.5 / 2.0 |
 | Tendencias | `prophet-annual-v1.0.0` o `linear-extrapolation-v1.0.0` | Prophet / fallback sobre series curadas | Panel multi-periodo |
 | Insights | `composite-narrative-v1.0.0` | Plantillas determinísticas | Revisión humana obligatoria |
 
-## Ciclo entrenar → promover → rollback
+## Nivel intermedio (concurso)
+
+| Criterio | Cumplimiento |
+|----------|--------------|
+| Conjuntos datos.gov.co | 4–5 (SIVIGILA, vacunación, PM2.5, mortalidad/ acceso) |
+| Variables ML brotes | **15** (`OUTBREAK_ML_FEATURE_NAMES`) — ver [`data-dictionary.md`](data-dictionary.md) |
+| Algoritmo | **RandomForestClassifier** (class_weight balanced) |
+| Validación | Split temporal + métricas F1 / recall / ROC-AUC |
+| Explicabilidad | **SHAP TreeExplainer** en serving |
+| Integración multifuente | Ingesta municipal + resolver de datasets |
+
+## Ciclo entrenar → promover → rollback (brotes)
+
+```bash
+cd backend
+PYTHONPATH=src python ml/train_outbreak_experiment.py --from-db
+PYTHONPATH=src python -m modules.outbreak_prediction.interfaces.ml_cli promote randomforest-outbreak-v1.0.0
+PYTHONPATH=src python -m modules.outbreak_prediction.interfaces.ml_cli status
+PYTHONPATH=src python -m modules.outbreak_prediction.interfaces.ml_cli rollback
+```
+
+## Ciclo entrenar → promover → rollback (riesgo territorial)
 
 ```bash
 cd backend
@@ -30,7 +52,7 @@ PYTHONPATH=src DATABASE_URL=... python ml/train_mortality_experiment.py --from-d
 PYTHONPATH=src DATABASE_URL=... python ml/evaluate_temporal.py --from-db
 ```
 
-Artefactos en `backend/ml/artifacts/`; promoción en `promoted.json`.
+Artefactos en `backend/ml/artifacts/`; promoción de brotes en `promoted-outbreak.json`; promoción de riesgo en `promoted.json`.
 
 ## Prophet
 
@@ -40,8 +62,9 @@ Artefactos en `backend/ml/artifacts/`; promoción en `promoted.json`.
 
 ## Explicabilidad
 
-- **Modo rule-based:** `feature_contributions` con descomposición determinística.
-- **Modo promovido:** contribuciones SHAP sobre el modelo Ridge activo.
+- **Modo rule-based (fallback brotes):** `feature_contributions` determinísticas.
+- **Modo promovido brotes:** contribuciones **SHAP TreeExplainer** sobre Random Forest.
+- **Modo promovido riesgo:** contribuciones SHAP sobre Ridge.
 - Correlación histórica **no implica causalidad**.
 
 ## Sesgos y límites

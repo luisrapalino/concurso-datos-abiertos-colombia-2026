@@ -1,7 +1,26 @@
 # Plataforma de Inteligencia Epidemiológica Territorial
 
-Directorio de aplicación y documentación del proyecto.
+Plataforma de inteligencia epidemiológica territorial basada en **datos abiertos** e **IA explicable** para apoyar la toma de decisiones en salud pública.
 
+**Concurso de Datos Abiertos Colombia 2026** — nivel **Intermedio (IA)**  
+Reto: predecir brotes de enfermedades transmisibles integrando morbilidad, vacunación, calidad del aire y acceso a salud.
+
+| Aspecto | Detalle |
+|---------|---------|
+| **Equipo ID** | 200 |
+| **Reto** | Salud y Bienestar — brotes transmisibles con IA |
+| Modelo principal | `randomforest-outbreak-v1.0.0` (Random Forest + SHAP) |
+| Variables ML | 15 features multivariadas |
+| Fuentes abiertas | 4–5 conjuntos [datos.gov.co](https://www.datos.gov.co) |
+| Validación | Split temporal train ≤2020 / test ≥2021 |
+| Trazabilidad concurso | [`docs/concurso-alignment.md`](docs/concurso-alignment.md) |
+
+### Equipo
+
+| Rol | Contacto |
+|-----|----------|
+| Líder | luisrapalino88@gmail.com |
+| Participante 2 | Rapalinorokate@gmail.com 
 ## Desarrollo (Docker)
 
 1. Copia variables de entorno: `cp .env.example .env` (ajusta puertos si hay conflictos locales).
@@ -25,19 +44,31 @@ Los códigos municipales se validan contra el catálogo DANE DIVIPOLA embebido (
 docker compose up -d ingestion-worker
 ```
 
-## Modelos ML (riesgo territorial)
+## Modelos ML — brotes (reto concurso)
 
-Entrenar, promover y activar SHAP en serving:
+Entrenar, promover y servir predicciones con SHAP:
 
 ```bash
 cd backend
-PYTHONPATH=src python ml/train_mortality_experiment.py
-PYTHONPATH=src python -m modules.territorial_risk.interfaces.ml_cli promote ridge-mortality-risk-v1.0.0
+PYTHONPATH=src python ml/train_outbreak_experiment.py --from-db
+PYTHONPATH=src python -m modules.outbreak_prediction.interfaces.ml_cli promote randomforest-outbreak-v1.0.0
+PYTHONPATH=src python -m modules.outbreak_prediction.interfaces.ml_cli status
 ```
 
 Rollback al scoring rule-based:
 
 ```bash
+PYTHONPATH=src python -m modules.outbreak_prediction.interfaces.ml_cli rollback
+```
+
+Ver [`docs/ml-evaluation.md`](docs/ml-evaluation.md) y [`docs/data-dictionary.md`](docs/data-dictionary.md).
+
+## Modelos ML — riesgo territorial (contexto)
+
+```bash
+cd backend
+PYTHONPATH=src python ml/train_mortality_experiment.py
+PYTHONPATH=src python -m modules.territorial_risk.interfaces.ml_cli promote ridge-mortality-risk-v1.0.0
 PYTHONPATH=src python -m modules.territorial_risk.interfaces.ml_cli rollback
 ```
 
@@ -79,8 +110,16 @@ Migraciones: `backend/alembic` + `backend/alembic.ini`.
 
 ## Documentación
 
-- [AGENTS.md](AGENTS.md) — visión del producto, stack, arquitectura (DDD), reglas de backend, frontend y ML, y convenciones de API.
+- [docs/concurso-alignment.md](docs/concurso-alignment.md) — trazabilidad con el reto del concurso (nivel Intermedio).
+- [docs/data-dictionary.md](docs/data-dictionary.md) — 15 variables del modelo de brotes.
+- [docs/data-sources.md](docs/data-sources.md) — catálogo de fuentes datos.gov.co.
+- [docs/ml-evaluation.md](docs/ml-evaluation.md) — evaluación, validación temporal, ciclo promote/rollback.
+- [AGENTS.md](AGENTS.md) — visión del producto, stack, arquitectura (DDD), reglas de backend, frontend y ML.
 - [docs/roadmap.md](docs/roadmap.md) — plan por fases hasta producto mínimo institucional completo.
 - [docs/user-guide.md](docs/user-guide.md) — guía de uso del MVP.
 - [docs/architecture.md](docs/architecture.md) — arquitectura técnica resumida.
 - [docs/crisp-ml.md](docs/crisp-ml.md) — ciclo de vida del sistema de IA y calidad (CRISP-ML(Q)).
+
+## Licencia
+
+Código bajo [MIT](LICENSE). Los datasets de [datos.gov.co](https://www.datos.gov.co) conservan sus propias condiciones de uso.
