@@ -1,0 +1,35 @@
+{
+  "model_version": "randomforest-outbreak-v1.0.0",
+  "algorithm": "RandomForestClassifier",
+  "feature_count": 15,
+  "features": [
+    "log_observed_cases",
+    "log_baseline_cases",
+    "cases_vs_median",
+    "log_previous_week_cases",
+    "week_over_week_ratio",
+    "vaccination_coverage_pct",
+    "vaccination_gap",
+    "health_access_pct",
+    "health_access_gap",
+    "pm25_ug_m3",
+    "epidemiological_week_sin",
+    "epidemiological_week_cos",
+    "cases_above_baseline",
+    "accelerated_growth",
+    "territorial_risk_proxy"
+  ],
+  "trained_at": "2026-06-21T18:18:02.458978+00:00",
+  "training_samples": 1247,
+  "positive_rate": 0.3633,
+  "validation": {
+    "strategy": "temporal split: train <= 2020, test >= 2021",
+    "train_samples": 937,
+    "test_samples": 310,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "roc_auc": 1.0
+  },
+  "notes": "Trained from curated PostgreSQL observations (SIVIGILA dengue panel)."
+}

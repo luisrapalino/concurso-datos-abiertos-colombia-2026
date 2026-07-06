@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from api.deps import get_db_session
+from config.settings import get_settings
 from modules.outbreak_prediction.application.dto import (
     OutbreakAlertDto,
     OutbreakAlertsQueryDto,
@@ -15,6 +16,9 @@ from modules.outbreak_prediction.application.dto import (
 from modules.outbreak_prediction.application.list_outbreak_alerts import ListOutbreakAlertsUseCase
 from modules.outbreak_prediction.application.list_outbreak_map import ListOutbreakMapUseCase
 from modules.outbreak_prediction.application.predict_outbreak import PredictOutbreakUseCase
+from modules.outbreak_prediction.infrastructure.ml.file_promoted_outbreak_model_adapter import (
+    FilePromotedOutbreakModelAdapter,
+)
 from modules.outbreak_prediction.infrastructure.outbreak_data_adapter import (
     SqlAlchemyOutbreakDataAdapter,
 )
@@ -31,6 +35,7 @@ def get_predict_outbreak_use_case(
     return PredictOutbreakUseCase(
         SqlAlchemyOutbreakDataAdapter(session),
         SqlAlchemyOutbreakPredictionRepository(session),
+        FilePromotedOutbreakModelAdapter(get_settings()),
     )
 
 

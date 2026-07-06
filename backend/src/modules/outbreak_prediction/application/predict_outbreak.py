@@ -5,6 +5,9 @@ from modules.outbreak_prediction.application.dto import (
     OutbreakPredictionReadDto,
     PredictOutbreakQueryDto,
 )
+from modules.outbreak_prediction.application.ports.promoted_outbreak_model_port import (
+    PromotedOutbreakModelPort,
+)
 from modules.outbreak_prediction.domain.outbreak_prediction import (
     DENGUE_EVENT_CODE,
     DENGUE_EVENT_NAME,
@@ -17,6 +20,9 @@ from modules.outbreak_prediction.domain.repositories import (
     OutbreakPredictionRepository,
 )
 from modules.outbreak_prediction.domain.scoring import compute_outbreak_prediction
+from modules.outbreak_prediction.infrastructure.ml.file_promoted_outbreak_model_adapter import (
+    NullPromotedOutbreakModelAdapter,
+)
 from shared.exceptions import EntityNotFoundError
 
 
@@ -27,20 +33,23 @@ class PredictOutbreakUseCase:
         self,
         data_port: OutbreakDataPort,
         repository: OutbreakPredictionRepository,
+        promoted_model: PromotedOutbreakModelPort | None = None,
     ) -> None:
         self._data_port = data_port
         self._repository = repository
+        self._promoted_model = promoted_model or NullPromotedOutbreakModelAdapter()
 
     def execute(self, query: PredictOutbreakQueryDto) -> OutbreakPredictionReadDto:
         territorial_code = str(query.territorial_code)
         period = str(query.period)
         event_code = str(query.event_code)
+        model_version = _current_model_version(self._promoted_model)
 
         cached = self._repository.get(
             territorial_code=territorial_code,
             period=period,
             event_code=event_code,
-            model_version=OUTBREAK_RULES_VERSION,
+            model_version=model_version,
         )
         if cached is not None and cached.feature_contributions:
             return _to_dto(cached, persisted=True)
@@ -82,9 +91,15 @@ class PredictOutbreakUseCase:
                 pm25_ug_m3=float(bundle.pm25_ug_m3) if bundle.pm25_ug_m3 is not None else None,
             ),
             generated_at=datetime.now(tz=UTC),
+            promoted_model=self._promoted_model,
         )
         self._repository.save(prediction)
         return _to_dto(prediction, persisted=True)
+
+
+def _current_model_version(promoted_model: PromotedOutbreakModelPort) -> str:
+    active_version = promoted_model.active_model_version()
+    return active_version or OUTBREAK_RULES_VERSION
 
 
 def _to_dto(prediction: OutbreakPrediction, *, persisted: bool) -> OutbreakPredictionReadDto:

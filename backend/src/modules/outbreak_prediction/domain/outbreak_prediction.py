@@ -9,6 +9,7 @@ VACCINATION_DEFINITION_ID = "dpta-penta-vaccination-coverage"
 PM25_DEFINITION_ID = "pm25-annual-mean"
 HEALTH_ACCESS_DEFINITION_ID = "institutional-births-coverage"
 OUTBREAK_RULES_VERSION = "outbreak-multivariate-v1.0.0"
+OUTBREAK_ML_DEFAULT_VERSION = "randomforest-outbreak-v1.0.0"
 
 
 class OutbreakClassification(StrEnum):

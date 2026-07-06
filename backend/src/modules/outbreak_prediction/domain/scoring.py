@@ -1,5 +1,8 @@
 from datetime import datetime
 
+from modules.outbreak_prediction.application.ports.promoted_outbreak_model_port import (
+    PromotedOutbreakModelPort,
+)
 from modules.outbreak_prediction.domain.outbreak_prediction import (
     DENGUE_EVENT_CODE,
     DENGUE_EVENT_NAME,
@@ -25,12 +28,40 @@ def compute_outbreak_prediction(
     features: OutbreakFeatureSnapshot,
     *,
     generated_at: datetime,
+    promoted_model: PromotedOutbreakModelPort | None = None,
 ) -> OutbreakPrediction:
-    """Multivariate, explainable outbreak signal from curated public health data."""
+    """Predict outbreak probability using promoted ML or rule-based fallback."""
     if features.baseline_cases <= 0:
         msg = "Baseline case count must be positive to compute outbreak probability."
         raise ValueError(msg)
 
+    if promoted_model is not None:
+        ml_result = promoted_model.score_with_explanations(features=features)
+        if ml_result is not None:
+            probability, contributions, model_version = ml_result
+            return _build_prediction(
+                features,
+                probability=probability,
+                contributions=contributions,
+                model_version=model_version,
+                generated_at=generated_at,
+                assumptions=(
+                    "Outbreak probability predicted by a promoted Random Forest classifier.",
+                    "Feature contributions computed with SHAP TreeExplainer.",
+                    "Model trained on multivariate datos.gov.co indicators with temporal validation.",
+                    "Not validated for automatic public health activation.",
+                ),
+            )
+
+    return compute_rule_based_outbreak_prediction(features, generated_at=generated_at)
+
+
+def compute_rule_based_outbreak_prediction(
+    features: OutbreakFeatureSnapshot,
+    *,
+    generated_at: datetime,
+) -> OutbreakPrediction:
+    """Multivariate, explainable outbreak signal from curated public health data."""
     ratio = features.observed_cases / features.baseline_cases
     ratio_component = _clamp((ratio - 1.0) * 35.0 + 25.0)
 
@@ -84,13 +115,33 @@ def compute_outbreak_prediction(
         ),
     )
 
-    assumptions = (
-        "Outbreak probability combines SIVIGILA case elevation, vaccination coverage, "
-        "health access proxy and PM2.5 exposure.",
-        "Weekly epidemiological periods use convention YYYY-Www.",
-        "Vaccination coverage is expanded from departmental to municipal level.",
-        "Not validated for automatic public health activation.",
+    return _build_prediction(
+        features,
+        probability=probability,
+        contributions=contributions,
+        model_version=OUTBREAK_RULES_VERSION,
+        generated_at=generated_at,
+        assumptions=(
+            "Outbreak probability combines SIVIGILA case elevation, vaccination coverage, "
+            "health access proxy and PM2.5 exposure.",
+            "Weekly epidemiological periods use convention YYYY-Www.",
+            "Vaccination coverage is expanded from departmental to municipal level.",
+            "Not validated for automatic public health activation.",
+        ),
     )
+
+
+def _build_prediction(
+    features: OutbreakFeatureSnapshot,
+    *,
+    probability: float,
+    contributions: tuple[FeatureContribution, ...],
+    model_version: str,
+    generated_at: datetime,
+    assumptions: tuple[str, ...],
+) -> OutbreakPrediction:
+    ratio = features.observed_cases / max(features.baseline_cases, 1e-6)
+    pm25 = features.pm25_ug_m3 or 15.0
     drivers = (
         f"Observed {features.event_name} cases: {features.observed_cases:.0f}.",
         f"National median for period: {features.baseline_cases:.1f}.",
@@ -99,7 +150,6 @@ def compute_outbreak_prediction(
         f"Institutional births proxy: {features.health_access_pct or 0:.1f}%.",
         f"PM2.5 annual mean: {pm25:.1f} µg/m³.",
     )
-
     return OutbreakPrediction(
         territorial_code=features.territorial_code,
         period=features.period,
@@ -107,7 +157,7 @@ def compute_outbreak_prediction(
         event_name=features.event_name or DENGUE_EVENT_NAME,
         outbreak_probability=round(probability, 2),
         classification=classify_outbreak_probability(probability),
-        model_version=OUTBREAK_RULES_VERSION,
+        model_version=model_version,
         observed_cases=features.observed_cases,
         baseline_cases=features.baseline_cases,
         assumptions=assumptions,
