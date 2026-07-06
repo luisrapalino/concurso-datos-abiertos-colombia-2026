@@ -12,6 +12,7 @@ import {
 import { useMapTheme } from "@/hooks/use-map-theme";
 import type { GeoFeatureCollection, OutbreakMapPoint } from "@/lib/api/types";
 import { formatMunicipalityName } from "@/lib/domain-labels";
+import { cn } from "@/lib/utils";
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), { ssr: false });
 
@@ -39,7 +40,9 @@ interface ColombiaTerritorialChartProps {
   boundaryData?: GeoFeatureCollection | null;
   points: OutbreakMapPoint[];
   selectedCode: string;
-  height?: number;
+  height?: number | "100%";
+  embedded?: boolean;
+  className?: string;
   onSelectMunicipality: (code: string, name: string) => void;
 }
 
@@ -48,6 +51,7 @@ function buildScatterData(
   selectedCode: string,
   classificationColors: Record<MapClassification, string>,
   mapTheme: ReturnType<typeof useMapTheme>["theme"],
+  embedded: boolean,
 ): ScatterDatum[] {
   return points.map((point) => {
     const isSelected = point.territorial_code === selectedCode;
@@ -61,13 +65,13 @@ function buildScatterData(
       observedCases: point.observed_cases,
       classification,
       isSelected,
-      symbolSize: isSelected ? 26 : 20,
+      symbolSize: isSelected ? (embedded ? 30 : 26) : embedded ? 24 : 20,
       itemStyle: {
         color: classificationColors[classification],
         borderColor: isSelected ? mapTheme.selectedRing : mapTheme.markerStroke,
         borderWidth: isSelected ? 3 : mapTheme.markerStrokeWidth,
       },
-      label: { show: isSelected },
+      label: { show: !embedded && isSelected },
     };
   });
 }
@@ -77,6 +81,8 @@ export function ColombiaTerritorialChart({
   points,
   selectedCode,
   height = 440,
+  embedded = false,
+  className,
   onSelectMunicipality,
 }: ColombiaTerritorialChartProps) {
   const { theme: mapTheme, classificationColors } = useMapTheme();
@@ -88,15 +94,16 @@ export function ColombiaTerritorialChart({
   }, [boundaryData, hasBoundaryMap]);
 
   const scatterData = useMemo(
-    () => buildScatterData(points, selectedCode, classificationColors, mapTheme),
-    [classificationColors, mapTheme, points, selectedCode],
+    () => buildScatterData(points, selectedCode, classificationColors, mapTheme, embedded),
+    [classificationColors, embedded, mapTheme, points, selectedCode],
   );
 
   const option = useMemo<EChartsOption>(
     () => ({
-      backgroundColor: mapTheme.background,
+      backgroundColor: embedded ? "transparent" : mapTheme.background,
       tooltip: {
         trigger: "item",
+        confine: true,
         backgroundColor: mapTheme.tooltipBg,
         borderColor: mapTheme.tooltipBorder,
         borderWidth: 1,
@@ -108,9 +115,16 @@ export function ColombiaTerritorialChart({
         },
         extraCssText: "border-radius: 6px; box-shadow: 0 1px 4px rgb(20 40 36 / 0.12);",
         formatter: (params) => {
-          if (!params || typeof params !== "object" || !("data" in params)) return "";
+          if (
+            !params ||
+            typeof params !== "object" ||
+            !("data" in params) ||
+            (params as { seriesType?: string }).seriesType !== "scatter"
+          ) {
+            return "";
+          }
           const datum = params.data as ScatterDatum | undefined;
-          if (!datum) return "";
+          if (!datum?.territorialCode) return "";
           const cases =
             datum.isSelected
               ? ""
@@ -125,13 +139,15 @@ export function ColombiaTerritorialChart({
         map: hasBoundaryMap ? COLOMBIA_MAP_NAME : undefined,
         boundingCoords: COLOMBIA_BOUNDS_GEO,
         roam: false,
+        zoom: 1,
         silent: true,
-        layoutCenter: ["50%", "52%"],
-        layoutSize: "100%",
+        tooltip: { show: false },
+        layoutCenter: embedded ? (["50%", "50%"] as [string, string]) : (["50%", "52%"] as [string, string]),
+        layoutSize: embedded ? "118%" : "100%",
         itemStyle: {
-          areaColor: mapTheme.landFill,
+          areaColor: embedded ? "transparent" : mapTheme.landFill,
           borderColor: mapTheme.landStroke,
-          borderWidth: mapTheme.landWeight,
+          borderWidth: embedded ? 1.25 : mapTheme.landWeight,
         },
         emphasis: {
           disabled: true,
@@ -149,7 +165,7 @@ export function ColombiaTerritorialChart({
             shadowColor: "rgba(20, 40, 36, 0.15)",
           },
           label: {
-            show: true,
+            show: !embedded,
             formatter: (params) => {
               const datum = params.data as ScatterDatum;
               return datum.isSelected ? datum.name : "";
@@ -176,20 +192,29 @@ export function ColombiaTerritorialChart({
         },
       ],
     }),
-    [classificationColors, hasBoundaryMap, mapTheme, scatterData],
+    [embedded, hasBoundaryMap, mapTheme, scatterData],
   );
 
   return (
     <div
-      className="colombia-map overflow-hidden rounded-lg border border-border/60 shadow-inner"
-      style={{ height, backgroundColor: mapTheme.background }}
+      className={cn(
+        "colombia-map overflow-hidden",
+        !embedded && "rounded-lg border border-border/60 shadow-inner",
+        className,
+      )}
+      style={{
+        height: height === "100%" ? "100%" : height,
+        backgroundColor: embedded ? "transparent" : mapTheme.background,
+      }}
+      onWheel={embedded ? (event) => event.preventDefault() : undefined}
     >
       <ReactECharts
+        key={embedded ? "embedded-map" : "panel-map"}
         option={option}
         style={{ height: "100%", width: "100%" }}
         opts={{ renderer: "svg" }}
         notMerge
-        lazyUpdate
+        lazyUpdate={false}
         onEvents={{
           click: (params: { data?: ScatterDatum }) => {
             const datum = params.data;
