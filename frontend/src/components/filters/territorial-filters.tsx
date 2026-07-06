@@ -78,7 +78,7 @@ export function TerritorialFilters() {
   return (
     <section
       aria-label="Filtros territoriales"
-      className="print:hidden space-y-3 border-b border-border/60 pb-5"
+      className="liquid-glass-subtle print:hidden space-y-3 rounded-2xl p-4"
     >
       <FieldGroup className="gap-3 sm:grid sm:grid-cols-2 sm:items-end">
         <Field>

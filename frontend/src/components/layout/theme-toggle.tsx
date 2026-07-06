@@ -5,17 +5,25 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 
-export function ThemeToggle({ className }: { className?: string }) {
+type ThemeToggleProps = {
+  className?: string;
+  variant?: "floating" | "glass";
+};
+
+export function ThemeToggle({ className, variant = "floating" }: ThemeToggleProps) {
   const { resolved, toggle } = useTheme();
 
   return (
     <Button
       type="button"
-      variant="outline"
+      variant={variant === "glass" ? "ghost" : "outline"}
       size="icon"
       className={cn(
-        "fixed right-5 bottom-5 z-50 size-10 rounded-full border-border/70 bg-card/90 shadow-md backdrop-blur-sm print:hidden",
-        "hover:bg-accent hover:text-accent-foreground",
+        variant === "floating" &&
+          "fixed right-5 bottom-5 z-50 size-10 rounded-full border-border/70 bg-card/90 shadow-md backdrop-blur-sm hover:bg-accent hover:text-accent-foreground",
+        variant === "glass" &&
+          "size-8 shrink-0 rounded-full border-0 bg-transparent text-muted-foreground hover:bg-(--glass-nav-hover) hover:text-foreground",
+        "print:hidden",
         className,
       )}
       onClick={toggle}

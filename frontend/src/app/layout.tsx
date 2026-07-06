@@ -1,28 +1,17 @@
 import type { Metadata } from "next";
-import { DM_Sans, JetBrains_Mono, Source_Serif_4 } from "next/font/google";
-import { AppShell } from "@/components/layout/app-shell";
+import { RootShell } from "@/components/layout/root-shell";
 import { ThemeScript } from "@/components/layout/theme-script";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import "./fonts.css";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-});
-
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
-  subsets: ["latin"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Radar de Brotes",
-  description: "Priorización territorial con datos abiertos de Colombia.",
+  title: {
+    default: "Radar de Brotes — Inteligencia epidemiológica territorial",
+    template: "%s · Radar de Brotes",
+  },
+  description:
+    "Predicción explicable de brotes con datos abiertos de Colombia. Random Forest, SHAP y vigilancia territorial.",
 };
 
 export default function RootLayout({
@@ -31,17 +20,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="es"
-      className={`${dmSans.variable} ${sourceSerif.variable} ${jetbrainsMono.variable} h-full antialiased`}
-      suppressHydrationWarning
-    >
+    <html lang="es" className="h-full antialiased" suppressHydrationWarning>
       <head>
         <ThemeScript />
       </head>
       <body className="min-h-full">
         <TooltipProvider>
-          <AppShell>{children}</AppShell>
+          <RootShell>{children}</RootShell>
         </TooltipProvider>
       </body>
     </html>

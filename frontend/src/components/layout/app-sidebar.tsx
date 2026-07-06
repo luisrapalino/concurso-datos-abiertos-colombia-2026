@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Radar", icon: Home },
+  { href: "/radar", label: "Radar", icon: Home },
   { href: "/brotes", label: "Ficha", icon: Bug },
   { href: "/mapa", label: "Mapa", icon: Map },
   { href: "/informe", label: "Informe", icon: FileText },

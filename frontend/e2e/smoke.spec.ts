@@ -1,8 +1,16 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Radar de brotes — smoke", () => {
-  test("home radar loads with priority table", async ({ page }) => {
+  test("landing page loads with hero and CTA", async ({ page }) => {
     await page.goto("/");
+    await expect(
+      page.getByRole("heading", { name: /anticipa brotes con datos abiertos/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: /abrir radar territorial/i })).toBeVisible();
+  });
+
+  test("radar page loads with priority table", async ({ page }) => {
+    await page.goto("/radar");
     await expect(page.getByRole("heading", { name: /¿dónde revisar primero\?/i })).toBeVisible();
     await expect(page.getByText(/prioridad territorial/i)).toBeVisible();
   });
@@ -33,8 +41,8 @@ test.describe("Radar de brotes — smoke", () => {
     });
   });
 
-  test("deprecated routes redirect to home", async ({ page }) => {
+  test("deprecated routes redirect to radar", async ({ page }) => {
     await page.goto("/riesgo");
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL("/radar");
   });
 });

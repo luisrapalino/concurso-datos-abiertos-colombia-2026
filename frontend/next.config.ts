@@ -22,11 +22,11 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: "/riesgo", destination: "/", permanent: false },
-      { source: "/indicadores", destination: "/", permanent: false },
-      { source: "/anomalias", destination: "/", permanent: false },
-      { source: "/tendencias", destination: "/", permanent: false },
-      { source: "/insights", destination: "/", permanent: false },
+      { source: "/riesgo", destination: "/radar", permanent: false },
+      { source: "/indicadores", destination: "/radar", permanent: false },
+      { source: "/anomalias", destination: "/radar", permanent: false },
+      { source: "/tendencias", destination: "/radar", permanent: false },
+      { source: "/insights", destination: "/radar", permanent: false },
     ];
   },
 };
