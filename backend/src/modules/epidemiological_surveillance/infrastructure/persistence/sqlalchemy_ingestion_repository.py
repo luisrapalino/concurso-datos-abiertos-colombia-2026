@@ -17,13 +17,25 @@ from modules.epidemiological_surveillance.infrastructure.persistence.orm_models 
 )
 
 
+def _serialize_int_tuple(values: tuple[int, ...]) -> str | None:
+    if not values:
+        return None
+    return ",".join(str(value) for value in values)
+
+
+def _serialize_str_tuple(values: tuple[str, ...]) -> str | None:
+    if not values:
+        return None
+    return ",".join(values)
+
+
 class SqlAlchemyIngestionRepository:
     """Persistence adapter for ingestion runs and curated observations."""
 
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def begin_run(self, source_id: str) -> str:
+    def begin_run(self, source_id: str, *, sync_mode: str | None = None) -> str:
         run_id = uuid.uuid4().hex
         self._session.add(
             IngestionRunRow(
@@ -32,12 +44,25 @@ class SqlAlchemyIngestionRepository:
                 status=IngestionRunStatus.RUNNING.value,
                 started_at=utc_now(),
                 records_upserted=0,
+                records_rejected=0,
+                sync_mode=sync_mode,
             )
         )
         self._session.commit()
         return run_id
 
-    def complete_run(self, run_id: str, *, records_upserted: int) -> None:
+    def complete_run(
+        self,
+        run_id: str,
+        *,
+        records_upserted: int,
+        records_rejected: int = 0,
+        batches_processed: int | None = None,
+        years_processed: tuple[int, ...] = (),
+        territorial_codes: tuple[str, ...] = (),
+        sync_mode: str | None = None,
+        bindings_used: tuple[str, ...] = (),
+    ) -> None:
         run = self._session.get(IngestionRunRow, run_id)
         if run is None:
             msg = f"Ingestion run not found: {run_id}"
@@ -45,6 +70,13 @@ class SqlAlchemyIngestionRepository:
         run.status = IngestionRunStatus.SUCCEEDED.value
         run.finished_at = utc_now()
         run.records_upserted = records_upserted
+        run.records_rejected = records_rejected
+        run.batches_processed = batches_processed
+        run.years_processed = _serialize_int_tuple(years_processed)
+        run.territorial_codes = _serialize_str_tuple(territorial_codes)
+        if sync_mode is not None:
+            run.sync_mode = sync_mode
+        run.bindings_used = _serialize_str_tuple(bindings_used)
         self._session.commit()
 
     def fail_run(self, run_id: str, error_message: str) -> None:

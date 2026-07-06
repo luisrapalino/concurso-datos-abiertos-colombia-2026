@@ -62,6 +62,8 @@ class SyncMunicipalIndicatorsUseCase:
         years_touched: list[int] = []
         runs_by_source: dict[str, str] = {}
         upserted_by_source: dict[str, int] = defaultdict(int)
+        rejected_by_source: dict[str, int] = defaultdict(int)
+        bindings_by_source: dict[str, set[str]] = defaultdict(set)
 
         try:
             for territorial_code in command.territorial_codes:
@@ -84,6 +86,9 @@ class SyncMunicipalIndicatorsUseCase:
                                 break
 
                             locked_binding = resolution.binding
+                            bindings_by_source[resolution.binding.source_id].add(
+                                resolution.binding.binding_id,
+                            )
                             if not resolution.records:
                                 break
 
@@ -97,6 +102,7 @@ class SyncMunicipalIndicatorsUseCase:
                                     self._territorial_catalog,
                                 )
                                 total_rejected += summary.rejected_count
+                                rejected_by_source[resolution.binding.source_id] += summary.rejected_count
                                 rejected_codes.update(summary.rejected_territorial_codes)
 
                             if validated:
@@ -107,6 +113,7 @@ class SyncMunicipalIndicatorsUseCase:
                                     if source_id not in runs_by_source:
                                         runs_by_source[source_id] = self._repository.begin_run(
                                             source_id,
+                                            sync_mode="municipal",
                                         )
                                     upserted = self._repository.upsert_observations(
                                         run_id=runs_by_source[source_id],
@@ -149,6 +156,12 @@ class SyncMunicipalIndicatorsUseCase:
                 self._repository.complete_run(
                     run_id,
                     records_upserted=upserted_by_source[source_id],
+                    records_rejected=rejected_by_source[source_id],
+                    batches_processed=batches_processed,
+                    years_processed=tuple(years_touched),
+                    territorial_codes=command.territorial_codes,
+                    sync_mode="municipal",
+                    bindings_used=tuple(sorted(bindings_by_source[source_id])),
                 )
 
         return SyncIngestionResult(

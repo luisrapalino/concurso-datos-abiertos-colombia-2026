@@ -39,7 +39,7 @@ class IngestHealthIndicatorsUseCase:
                 rejected_territorial_codes=validation_summary.rejected_territorial_codes,
             )
 
-        run_id = self._repository.begin_run(command.source_id)
+        run_id = self._repository.begin_run(command.source_id, sync_mode="batch")
         try:
             upserted = self._repository.upsert_observations(
                 run_id=run_id,
@@ -47,7 +47,12 @@ class IngestHealthIndicatorsUseCase:
                 definition_id=command.definition_id,
                 records=records,
             )
-            self._repository.complete_run(run_id, records_upserted=upserted)
+            self._repository.complete_run(
+                run_id,
+                records_upserted=upserted,
+                records_rejected=validation_summary.rejected_count,
+                sync_mode="batch",
+            )
         except Exception as exc:
             self._repository.fail_run(run_id, str(exc))
             raise

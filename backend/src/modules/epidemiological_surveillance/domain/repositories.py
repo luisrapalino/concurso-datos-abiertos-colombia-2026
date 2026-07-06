@@ -49,10 +49,21 @@ class MortalityIndicatorsSourceClient(Protocol):
 
 
 class IngestionRepository(Protocol):
-    def begin_run(self, source_id: str) -> str:
+    def begin_run(self, source_id: str, *, sync_mode: str | None = None) -> str:
         """Create a running ingestion run and return its identifier."""
 
-    def complete_run(self, run_id: str, *, records_upserted: int) -> None:
+    def complete_run(
+        self,
+        run_id: str,
+        *,
+        records_upserted: int,
+        records_rejected: int = 0,
+        batches_processed: int | None = None,
+        years_processed: tuple[int, ...] = (),
+        territorial_codes: tuple[str, ...] = (),
+        sync_mode: str | None = None,
+        bindings_used: tuple[str, ...] = (),
+    ) -> None:
         """Mark an ingestion run as succeeded."""
 
     def fail_run(self, run_id: str, error_message: str) -> None:

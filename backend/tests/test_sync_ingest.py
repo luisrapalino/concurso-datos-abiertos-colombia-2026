@@ -33,11 +33,11 @@ class _FakeRepository:
     def __init__(self) -> None:
         self.upserted: list[int] = []
 
-    def begin_run(self, source_id: str) -> str:
+    def begin_run(self, source_id: str, *, sync_mode: str | None = None) -> str:
         return f"run:{source_id}"
 
-    def complete_run(self, run_id: str, *, records_upserted: int) -> None:
-        del run_id, records_upserted
+    def complete_run(self, run_id: str, **kwargs) -> None:
+        del run_id, kwargs
 
     def fail_run(self, run_id: str, error_message: str) -> None:
         del run_id, error_message

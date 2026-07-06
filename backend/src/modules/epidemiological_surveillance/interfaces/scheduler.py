@@ -10,17 +10,18 @@ from collections.abc import Callable
 
 from config.settings import Settings, get_settings
 from infrastructure.persistence.database import dispose_engine, get_session, init_engine
-from modules.epidemiological_surveillance.application.sync_ingest_health_indicators import (
-    SyncIngestHealthIndicatorsUseCase,
+from modules.epidemiological_surveillance.application.municipal_dataset_resolver import (
+    MunicipalDatasetResolver,
+)
+from modules.epidemiological_surveillance.application.sync_municipal_indicators import (
+    SyncMunicipalIndicatorsUseCase,
+    default_municipal_sync_command,
 )
 from modules.epidemiological_surveillance.infrastructure.persistence.sqlalchemy_ingestion_repository import (  # noqa: E501
     SqlAlchemyIngestionRepository,
 )
-from modules.epidemiological_surveillance.interfaces.cli import (
-    SYNC_SOURCE_ORDER,
-    SOURCE_REGISTRY,
-    _build_source_client,
-    _build_sync_command,
+from modules.epidemiological_surveillance.infrastructure.sources.municipal_dataset_fetcher import (
+    MunicipalDatasetFetcher,
 )
 from shared.divipola_catalog import DivipolaCatalog
 
@@ -36,43 +37,39 @@ def run_sync_once(settings: Settings) -> None:
     catalog = DivipolaCatalog.from_file(settings.divipola_catalog_path)
     init_engine(settings.database_url)
 
-    for source_key in SYNC_SOURCE_ORDER:
-        if _shutdown_requested:
-            break
-
-        registry = SOURCE_REGISTRY[source_key]
-        session_gen = get_session()
-        session = next(session_gen)
-        try:
-            use_case = SyncIngestHealthIndicatorsUseCase(
-                source_client=_build_source_client(registry, catalog=catalog),
-                repository=SqlAlchemyIngestionRepository(session),
-                territorial_catalog=catalog,
-            )
-            args = argparse.Namespace(
-                source=source_key,
+    session_gen = get_session()
+    session = next(session_gen)
+    try:
+        fetcher = MunicipalDatasetFetcher(catalog)
+        resolver = MunicipalDatasetResolver(fetcher)
+        use_case = SyncMunicipalIndicatorsUseCase(
+            resolver,
+            SqlAlchemyIngestionRepository(session),
+            territorial_catalog=catalog,
+        )
+        result = use_case.execute(
+            default_municipal_sync_command(
+                territorial_codes=None,
+                definition_ids=None,
                 batch_size=settings.ingestion_batch_size,
                 start_year=None,
                 end_year=settings.ingestion_end_year,
-                all_municipalities=False,
-                territorial_codes=None,
-                max_batches=None,
                 dry_run=False,
-                skip_territorial_validation=not settings.ingestion_validate_territorial_codes,
-            )
-            result = use_case.execute(
-                _build_sync_command(registry, args, settings),
-                progress=lambda message: print(message, flush=True),
-            )
-        finally:
-            session_gen.close()
-
-        print(
-            f"Scheduled sync completed for {source_key}: "
-            f"batches={result.batches_processed} "
-            f"records_upserted={result.records_upserted}",
-            flush=True,
+                validate_territorial_codes=settings.ingestion_validate_territorial_codes,
+                max_batches=None,
+            ),
+            progress=lambda message: print(message, flush=True),
         )
+    finally:
+        session_gen.close()
+
+    print(
+        "Scheduled municipal sync completed: "
+        f"batches={result.batches_processed} "
+        f"records_upserted={result.records_upserted} "
+        f"records_rejected={result.records_rejected}",
+        flush=True,
+    )
 
     dispose_engine()
 
@@ -85,7 +82,7 @@ def run_scheduler_loop(
 ) -> int:
     interval_seconds = settings.ingestion_interval_hours * 3600
     print(
-        "Starting incremental sync scheduler: "
+        "Starting municipal sync scheduler: "
         f"interval_hours={settings.ingestion_interval_hours} "
         f"batch_size={settings.ingestion_batch_size} "
         f"end_year={settings.ingestion_end_year}",
@@ -102,7 +99,7 @@ def run_scheduler_loop(
             sleep_fn(min(60.0, interval_seconds - slept))
             slept += min(60.0, interval_seconds - slept)
 
-    print("Incremental sync scheduler stopped.", flush=True)
+    print("Municipal sync scheduler stopped.", flush=True)
     return 0
 
 

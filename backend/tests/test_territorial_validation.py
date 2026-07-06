@@ -81,12 +81,12 @@ def test_ingestion_use_case_reports_rejected_records_on_dry_run() -> None:
             ]
 
     class _Repository:
-        def begin_run(self, source_id: str) -> str:
-            del source_id
+        def begin_run(self, source_id: str, *, sync_mode: str | None = None) -> str:
+            del source_id, sync_mode
             return "run-id"
 
-        def complete_run(self, run_id: str, *, records_upserted: int) -> None:
-            del run_id, records_upserted
+        def complete_run(self, run_id: str, **kwargs) -> None:
+            del run_id, kwargs
 
         def fail_run(self, run_id: str, error_message: str) -> None:
             del run_id, error_message

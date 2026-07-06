@@ -81,7 +81,7 @@ class SyncIngestHealthIndicatorsUseCase:
                 rejected_territorial_codes=tuple(sorted(rejected_codes)),
             )
 
-        run_id = self._repository.begin_run(command.source_id)
+        run_id = self._repository.begin_run(command.source_id, sync_mode="sync")
         try:
             for year in years:
                 year_had_data = False
@@ -124,7 +124,15 @@ class SyncIngestHealthIndicatorsUseCase:
                 if _should_stop(batches_processed, command.max_batches):
                     break
 
-            self._repository.complete_run(run_id, records_upserted=total_upserted)
+            self._repository.complete_run(
+                run_id,
+                records_upserted=total_upserted,
+                records_rejected=total_rejected,
+                batches_processed=batches_processed,
+                years_processed=tuple(years_touched),
+                territorial_codes=tuple(code for code in territorial_codes if code is not None),
+                sync_mode="sync",
+            )
         except Exception as exc:
             self._repository.fail_run(run_id, str(exc))
             raise

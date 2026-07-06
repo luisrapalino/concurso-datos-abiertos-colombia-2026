@@ -43,6 +43,12 @@ class IngestionRunRow(Base):
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     records_upserted: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    records_rejected: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    batches_processed: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    years_processed: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    territorial_codes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    sync_mode: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    bindings_used: Mapped[str | None] = mapped_column(Text, nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     source: Mapped[DataSourceRow] = relationship(back_populates="ingestion_runs")

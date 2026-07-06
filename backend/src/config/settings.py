@@ -18,8 +18,9 @@ class Settings(BaseSettings):
     ingestion_default_years: str = "2018,2019,2020"
     ingestion_default_limit: int = 15000
     ingestion_batch_size: int = 1000
-    ingestion_end_year: int = 2015
+    ingestion_end_year: int = 2018
     ingestion_validate_territorial_codes: bool = True
+    socrata_app_token: str | None = None
     ml_artifacts_dir: Path | None = None
     geojson_data_dir: Path | None = None
     api_key: str | None = None

@@ -116,7 +116,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Epidemiological surveillance ingestion CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    ingest_parser = subparsers.add_parser("ingest", help="Run a batch ingestion job")
+    ingest_parser = subparsers.add_parser(
+        "ingest",
+        help="Run a legacy batch ingestion job (prefer ingest-sync-municipal)",
+    )
     ingest_parser.add_argument(
         "source",
         choices=sorted(SOURCE_REGISTRY.keys()),
@@ -416,6 +419,12 @@ def run_ingest_sync_all(args: argparse.Namespace) -> int:
 
 
 def run_ingest(args: argparse.Namespace) -> int:
+    print(
+        "Warning: legacy ingest may truncate data (--limit). "
+        "Prefer: ingest-sync-municipal or ingest-sync.",
+        file=sys.stderr,
+        flush=True,
+    )
     registry = SOURCE_REGISTRY[args.source]
     years = _parse_years(args.years)
     settings = get_settings()
