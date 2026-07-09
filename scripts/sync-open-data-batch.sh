@@ -7,7 +7,7 @@ BATCH_SIZE="${INGESTION_BATCH_SIZE:-1000}"
 START_YEAR="${INGESTION_START_YEAR:-2022}"
 END_YEAR="${INGESTION_END_YEAR:-2018}"
 
-echo "Sincronización piloto: Medellín, Bogotá, Barranquilla, Cali"
-echo "Delegando en scripts/sync-pilot-cities.sh (limpia + captura)"
+echo "Sincronización ampliada: 20 ciudades principales"
+echo "Delegando en scripts/sync-expanded-cities.sh"
 
-exec "${ROOT_DIR}/scripts/sync-pilot-cities.sh"
+exec "${ROOT_DIR}/scripts/sync-expanded-cities.sh"
