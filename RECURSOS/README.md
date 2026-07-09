@@ -16,7 +16,7 @@ Regenerar tras cambios en métricas del modelo:
 
 ```bash
 docker compose run --rm --no-deps -v "$(pwd):/repo" --entrypoint sh api \
-  -c "pip install python-pptx fpdf2 -q && python /repo/scripts/build-concurso-presentation.py"
+  -c "pip install python-pptx reportlab Pillow -q && python /repo/scripts/build-concurso-presentation.py"
 ```
 
 ## Estructura del pitch (10 min)
