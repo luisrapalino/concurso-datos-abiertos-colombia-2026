@@ -12,6 +12,15 @@ ROOT = Path(__file__).resolve().parents[1]
 RECURSOS = ROOT / "RECURSOS"
 ARTIFACT = ROOT / "backend" / "ml" / "artifacts" / "randomforest-outbreak-v1.0.0.json"
 
+TEAM_ID = "200"
+TEAM_LEVEL = "Intermedio (IA)"
+TEAM_CHALLENGE = "Salud y Bienestar — brotes transmisibles"
+REPO_URL = "https://github.com/luisrapalino/concurso-datos-abiertos-colombia-2026"
+DEMO_URL = "http://localhost:3002/brotes"
+API_URL = "http://localhost:8000/docs"
+OBSERVATIONS_COUNT = "~9.000"
+CITIES_COUNT = "20"
+
 
 def _load_metrics() -> dict:
     if ARTIFACT.exists():
@@ -33,75 +42,107 @@ def _ensure_fpdf() -> None:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "fpdf2", "-q"])
 
 
+def _slides_content(metrics: dict) -> list[tuple[str, str]]:
+    validation = metrics.get("validation", {})
+    train = validation.get("train_samples", "—")
+    test = validation.get("test_samples", "—")
+    f1 = validation.get("f1", "—")
+    recall = validation.get("recall", "—")
+    roc = validation.get("roc_auc", "—")
+    samples = metrics.get("training_samples", "N/A")
+
+    return [
+        (
+            "Radar de Brotes",
+            "Concurso Datos al Ecosistema 2026 · IA para Colombia\n\n"
+            f"Equipo ID {TEAM_ID} · Nivel {TEAM_LEVEL}\n"
+            f"Reto: {TEAM_CHALLENGE}\n\n"
+            "Integrantes:\n"
+            "• Líder — luisrapalino88@gmail.com\n"
+            "• Participante 2 — Rapalinorokate@gmail.com",
+        ),
+        (
+            "Problema y objetivo",
+            "Problema:\n"
+            "Los brotes de enfermedades transmisibles requieren detección temprana, "
+            "pero la información está dispersa en fuentes abiertas.\n\n"
+            "Objetivo:\n"
+            "Priorizar municipios con señal de brote integrando morbilidad, vacunación, "
+            "calidad del aire y acceso a salud — con IA explicable y revisión humana.",
+        ),
+        (
+            "Datos abiertos",
+            "Fuentes (datos.gov.co):\n"
+            "• SIVIGILA — casos semanales (dengue, hepatitis, chikungunya…)\n"
+            "• Vacunación pentavalente DPT-HepB-Hib\n"
+            "• PM2.5 anual municipal (+ fallback SISAIRE)\n"
+            "• INS: mortalidad y partos institucionales\n\n"
+            "Tratamiento:\n"
+            f"{CITIES_COUNT} ciudades · {OBSERVATIONS_COUNT} observaciones curadas · "
+            "15 variables ML · validación DIVIPOLA · ingestión trazable en PostgreSQL",
+        ),
+        (
+            "Solución e IA",
+            "Plataforma modular (FastAPI + Next.js + Docker):\n"
+            "• Ingestión desde datos.gov.co con token Socrata\n"
+            "• Modelo Random Forest + SHAP TreeExplainer\n"
+            "• Panel: municipio × semana epidemiológica × dengue\n"
+            "• Validación temporal: entrenamiento ≤2020, prueba ≥2021\n"
+            "• Fallback rule-based auditable si no hay modelo promovido",
+        ),
+        (
+            "Resultados y demo",
+            f"Modelo promovido: randomforest-outbreak-v1.0.0\n"
+            f"• {samples} muestras de entrenamiento (dengue semanal)\n"
+            f"• Split temporal: train {train} / test {test}\n"
+            f"• F1 {f1} · Recall {recall} · ROC-AUC {roc}\n"
+            "• Cautela: panel acotado; validación epidemiológica externa pendiente\n\n"
+            "Demo en vivo:\n"
+            f"• {DEMO_URL} — señal y factores SHAP\n"
+            "• /mapa — alertas territoriales · /informe — reporte imprimible\n"
+            f"• API: {API_URL}",
+        ),
+        (
+            "Impacto",
+            "Beneficiarios: gestores de salud pública y vigilancia territorial\n\n"
+            "Valor público:\n"
+            "• Priorización de territorios antes del pico de casos\n"
+            "• Explicación clara de factores (no caja negra)\n"
+            "• Reproducible con datos abiertos oficiales\n\n"
+            "Sostenibilidad: worker de ingestión, documentación, CI y despliegue Docker",
+        ),
+        (
+            "Repositorio y recursos",
+            f"GitHub: {REPO_URL}\n\n"
+            "Documentación clave:\n"
+            "• README.md — ficha técnica y reproducción\n"
+            "• docs/concurso-alignment.md — trazabilidad del reto\n"
+            "• docs/data-dictionary.md — 15 variables\n"
+            "• docs/ml-evaluation.md — validación y límites\n"
+            "• RECURSOS/ — presentación y portada",
+        ),
+        (
+            "Cierre",
+            "Frase clave:\n"
+            "Priorizamos municipios con riesgo de brote usando datos abiertos "
+            "de Colombia e IA explicable.\n\n"
+            "Valor diferencial:\n"
+            "Integración multifuente + explicabilidad SHAP + plataforma demostrable "
+            "en 10 minutos.\n\n"
+            "Gracias — preguntas técnicas bienvenidas.",
+        ),
+    ]
+
+
 def build_pptx(metrics: dict) -> Path:
     from pptx import Presentation
     from pptx.util import Inches, Pt
-
-    validation = metrics.get("validation", {})
-    slides_content = [
-        (
-            "Radar de Brotes",
-            "Inteligencia epidemiológica territorial\nConcurso Datos Abiertos Colombia 2026\nEquipo ID 200 · Salud y Bienestar",
-        ),
-        (
-            "Problema",
-            "Predecir brotes de enfermedades transmisibles integrando:\n"
-            "• Morbilidad (SIVIGILA)\n• Vacunación\n• Calidad del aire (PM2.5)\n• Acceso a servicios de salud\n\n"
-            "Objetivo: apoyar prevención y respuesta temprana con revisión humana.",
-        ),
-        (
-            "Fuentes abiertas (datos.gov.co)",
-            "• SIVIGILA — casos semanales (dengue, hepatitis, chikungunya…)\n"
-            "• Cobertura vacunal pentavalente (DPT-HepB-Hib)\n"
-            "• PM2.5 promedio anual municipal (+ fallback SISAIRE)\n"
-            "• Indicadores INS: mortalidad y partos institucionales\n"
-            "• Catálogo DIVIPOLA para validación territorial",
-        ),
-        (
-            "Arquitectura",
-            "Backend FastAPI (DDD) + PostgreSQL + ML explicable\n"
-            "Frontend Next.js: mapa, alertas, informe territorial\n"
-            "Ingestión programada desde datos.gov.co con trazabilidad\n"
-            "Docker Compose para despliegue reproducible",
-        ),
-        (
-            "Modelo de IA — 15 variables",
-            "Random Forest + SHAP TreeExplainer\n"
-            "Panel: municipio × semana epidemiológica × dengue\n"
-            "Features: casos, crecimiento, vacunación, PM2.5, acceso a salud, estacionalidad\n"
-            "Validación temporal: entrenamiento ≤2020, prueba ≥2021",
-        ),
-        (
-            "Resultados del modelo",
-            f"Muestras de entrenamiento: {metrics.get('training_samples', 'N/A')}\n"
-            f"Train / test: {validation.get('train_samples', '—')} / {validation.get('test_samples', '—')}\n"
-            f"F1: {validation.get('f1', '—')} · Recall: {validation.get('recall', '—')} · ROC-AUC: {validation.get('roc_auc', '—')}\n\n"
-            "Cobertura actual: 20 ciudades principales (~9.000 observaciones curadas)\n"
-            "Nota: métricas altas en panel acotado; requiere validación epidemiológica externa.",
-        ),
-        (
-            "Demo en vivo",
-            "1. http://localhost:3002/brotes — señal y factores SHAP\n"
-            "2. Mapa territorial de alertas\n"
-            "3. Informe imprimible /informe\n"
-            "4. API OpenAPI: http://localhost:8000/docs",
-        ),
-        (
-            "Impacto y límites",
-            "Impacto: priorización territorial, explicabilidad para gestores de salud\n"
-            "Límites honestos:\n"
-            "• No activa respuestas automáticas\n"
-            "• Vacunación replicada desde nivel departamental\n"
-            "• PM2.5 solo donde hay estaciones\n"
-            "• Cobertura parcial vs todo el territorio nacional",
-        ),
-    ]
 
     prs = Presentation()
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
 
-    for title, body in slides_content:
+    for title, body in _slides_content(metrics):
         layout = prs.slide_layouts[1] if len(prs.slide_layouts) > 1 else prs.slide_layouts[0]
         slide = prs.slides.add_slide(layout)
         slide.shapes.title.text = title
@@ -110,7 +151,7 @@ def build_pptx(metrics: dict) -> Path:
             body_shape.text = body
             for paragraph in body_shape.text_frame.paragraphs:
                 for run in paragraph.runs:
-                    run.font.size = Pt(20)
+                    run.font.size = Pt(18)
 
     out = RECURSOS / "Presentacion.pptx"
     prs.save(out)
@@ -120,32 +161,48 @@ def build_pptx(metrics: dict) -> Path:
 def build_pdf(metrics: dict) -> Path:
     from fpdf import FPDF
 
-    validation = metrics.get("validation", {})
-
     pdf = FPDF(format="A4")
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.set_margins(18, 18, 18)
 
-    sections = [
-        ("Radar de Brotes - Concurso Datos Abiertos 2026", "Equipo ID 200 - Reto Salud y Bienestar\nPrediccion explicable de brotes con datos abiertos e IA."),
-        ("Problema", "Integrar morbilidad, vacunacion, calidad del aire y acceso a salud para apoyar la prevencion y respuesta temprana."),
-        ("Fuentes", "SIVIGILA, vacunacion pentavalente, PM2.5, indicadores INS, DIVIPOLA."),
-        ("Modelo", f"Random Forest - 15 features - SHAP - {metrics.get('training_samples', 'N/A')} muestras - split temporal train/test {validation.get('train_samples', '-')}/{validation.get('test_samples', '-')}."),
-        ("Demo", "Frontend /brotes - /mapa - /informe - API /docs"),
-        ("Limites", "Apoyo analitico con revision humana obligatoria. Cobertura parcial territorial."),
-    ]
-
-    for title, body in sections:
+    for title, body in _slides_content(metrics):
         pdf.add_page()
         pdf.set_font("Helvetica", "B", 16)
-        pdf.multi_cell(0, 10, title)
+        pdf.multi_cell(0, 10, _ascii_safe(title))
         pdf.ln(4)
-        pdf.set_font("Helvetica", size=12)
-        pdf.multi_cell(0, 7, body)
+        pdf.set_font("Helvetica", size=11)
+        pdf.multi_cell(0, 6, _ascii_safe(body))
 
     out = RECURSOS / "presentacion.pdf"
     pdf.output(str(out))
     return out
+
+
+def _ascii_safe(text: str) -> str:
+    replacements = {
+        "—": "-",
+        "·": "-",
+        "•": "-",
+        "…": "...",
+        "≤": "<=",
+        "≥": ">=",
+        "×": "x",
+        "ó": "o",
+        "í": "i",
+        "á": "a",
+        "é": "e",
+        "ú": "u",
+        "ñ": "n",
+        "Ó": "O",
+        "Í": "I",
+        "Á": "A",
+        "É": "E",
+        "Ú": "U",
+        "Ñ": "N",
+    }
+    for src, dst in replacements.items():
+        text = text.replace(src, dst)
+    return text
 
 
 def main() -> int:
