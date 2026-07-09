@@ -19,13 +19,13 @@
     "accelerated_growth",
     "territorial_risk_proxy"
   ],
-  "trained_at": "2026-06-21T18:18:02.458978+00:00",
-  "training_samples": 1247,
-  "positive_rate": 0.3633,
+  "trained_at": "2026-07-09T22:05:41.805696+00:00",
+  "training_samples": 3781,
+  "positive_rate": 0.4888,
   "validation": {
     "strategy": "temporal split: train <= 2020, test >= 2021",
-    "train_samples": 937,
-    "test_samples": 310,
+    "train_samples": 2319,
+    "test_samples": 1462,
     "precision": 1.0,
     "recall": 1.0,
     "f1": 1.0,

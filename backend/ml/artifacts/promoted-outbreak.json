@@ -1,12 +1,17 @@
 {
   "active_version": "randomforest-outbreak-v1.0.0",
-  "previous_version": null,
-  "promoted_at": "2026-06-21T18:18:04.420914+00:00",
+  "previous_version": "randomforest-outbreak-v1.0.0",
+  "promoted_at": "2026-07-09T22:05:44.574062+00:00",
   "history": [
     {
       "action": "promote",
       "version": "randomforest-outbreak-v1.0.0",
       "at": "2026-06-21T18:18:04.420914+00:00"
+    },
+    {
+      "action": "promote",
+      "version": "randomforest-outbreak-v1.0.0",
+      "at": "2026-07-09T22:05:44.574062+00:00"
     }
   ]
 }
