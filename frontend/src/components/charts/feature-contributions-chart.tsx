@@ -1,7 +1,7 @@
 "use client";
 
 import type { OutbreakFeatureContribution } from "@/lib/api/types";
-import { outbreakFeatureLabels } from "@/lib/domain-labels";
+import { formatOutbreakFeatureLabel } from "@/lib/domain-labels";
 import { EChart, useChartTheme } from "@/components/charts/echarts-base";
 
 interface FeatureContributionsChartProps {
@@ -20,9 +20,7 @@ export function FeatureContributionsChart({
   }
 
   const sorted = [...contributions].sort((a, b) => b.contribution - a.contribution);
-  const labels = sorted.map(
-    (item) => outbreakFeatureLabels[item.feature] ?? item.feature,
-  );
+  const labels = sorted.map((item) => formatOutbreakFeatureLabel(item.feature));
   const values = sorted.map((item) => item.contribution);
 
   return (
@@ -32,9 +30,9 @@ export function FeatureContributionsChart({
         tooltip: {
           trigger: "axis",
           axisPointer: { type: "shadow" },
-          valueFormatter: (value) => `${Number(value).toFixed(1)} pts`,
+          valueFormatter: (value) => `${Number(value).toFixed(1)} puntos`,
         },
-        grid: { left: 8, right: 24, top: 8, bottom: 8, containLabel: true },
+        grid: { left: 8, right: 16, top: 8, bottom: 8, containLabel: true },
         xAxis: {
           type: "value",
           max: 100,
@@ -44,7 +42,7 @@ export function FeatureContributionsChart({
         yAxis: {
           type: "category",
           data: labels,
-          axisLabel: { fontSize: 11, width: 140, overflow: "truncate", color: colors.text },
+          axisLabel: { fontSize: 11, width: 200, overflow: "break", color: colors.text },
         },
         series: [
           {

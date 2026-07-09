@@ -1,3 +1,9 @@
+import {
+  formatOutbreakFeatureLabel,
+  formatRiskFeatureLabel,
+  translateAssumption,
+  translateDriver,
+} from "@/lib/domain-labels";
 import type {
   AnomalyAlertPage,
   BiasAnalysis,
@@ -63,9 +69,12 @@ async function fetchJson<T>(url: string): Promise<T> {
 function normalizeOutbreakPrediction(payload: OutbreakPrediction): OutbreakPrediction {
   return {
     ...payload,
-    drivers: payload.drivers ?? [],
-    assumptions: payload.assumptions ?? [],
-    feature_contributions: payload.feature_contributions ?? [],
+    drivers: (payload.drivers ?? []).map(translateDriver),
+    assumptions: (payload.assumptions ?? []).map(translateAssumption),
+    feature_contributions: (payload.feature_contributions ?? []).map((item) => ({
+      ...item,
+      feature: formatOutbreakFeatureLabel(item.feature),
+    })),
     persisted: payload.persisted ?? false,
   };
 }
@@ -73,9 +82,12 @@ function normalizeOutbreakPrediction(payload: OutbreakPrediction): OutbreakPredi
 function normalizeRiskScore(payload: RiskScore): RiskScore {
   return {
     ...payload,
-    drivers: payload.drivers ?? [],
-    assumptions: payload.assumptions ?? [],
-    feature_contributions: payload.feature_contributions ?? [],
+    drivers: (payload.drivers ?? []).map(translateDriver),
+    assumptions: (payload.assumptions ?? []).map(translateAssumption),
+    feature_contributions: (payload.feature_contributions ?? []).map((item) => ({
+      ...item,
+      feature: formatRiskFeatureLabel(item.feature),
+    })),
     persisted: payload.persisted ?? false,
   };
 }
@@ -83,7 +95,7 @@ function normalizeRiskScore(payload: RiskScore): RiskScore {
 function normalizeTerritorialTrend(payload: TerritorialTrend): TerritorialTrend {
   return {
     ...payload,
-    assumptions: payload.assumptions ?? [],
+    assumptions: (payload.assumptions ?? []).map(translateAssumption),
     points: payload.points ?? [],
   };
 }

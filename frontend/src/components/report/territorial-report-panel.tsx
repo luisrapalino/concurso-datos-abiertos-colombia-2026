@@ -19,7 +19,7 @@ import { epidemiologicalApi } from "@/lib/api/client";
 import { useApiResource } from "@/hooks/use-api-resource";
 import { useTerritorialFilters } from "@/stores/territorial-filters";
 
-import { driftStatusLabels, riskClassificationLabels } from "@/lib/domain-labels";
+import { driftStatusLabels, formatModelVersionLabel, riskClassificationLabels } from "@/lib/domain-labels";
 
 function ReportContent({
   territorialCode,
@@ -65,7 +65,7 @@ function ReportContent({
               {riskClassificationLabels[data.risk.classification] ?? data.risk.classification}
             </Badge>
           </div>
-          <p>Modelo: {data.risk.model_version}</p>
+          <p>Modelo: {formatModelVersionLabel(data.risk.model_version)}</p>
           <p>
             Cambios en los datos:{" "}
             <span className="font-medium">

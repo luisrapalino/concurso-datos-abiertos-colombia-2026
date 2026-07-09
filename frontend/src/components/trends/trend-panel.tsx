@@ -14,6 +14,7 @@ import {
   LoadingState,
 } from "@/components/shared/api-state";
 import { epidemiologicalApi } from "@/lib/api/client";
+import { formatModelVersionLabel } from "@/lib/domain-labels";
 import { useApiResource } from "@/hooks/use-api-resource";
 import { useTerritorialFilters } from "@/stores/territorial-filters";
 
@@ -38,7 +39,8 @@ function TrendPanelContent({ territorialCode }: { territorialCode: string }) {
       <CardHeader>
         <CardTitle>{trend.indicator_name}</CardTitle>
         <CardDescription>
-          Modelo {trend.model_version} · Horizonte {trend.forecast_horizon_weeks} semanas
+          {formatModelVersionLabel(trend.model_version)} · Proyección a{" "}
+          {trend.forecast_horizon_weeks} semanas
         </CardDescription>
       </CardHeader>
       <CardContent>

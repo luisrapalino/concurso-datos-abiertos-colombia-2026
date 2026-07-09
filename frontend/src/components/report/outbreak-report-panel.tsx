@@ -16,6 +16,7 @@ import { FeatureContributionsChart } from "@/components/charts/feature-contribut
 import { TrendChart } from "@/components/charts/trend-chart";
 import {
   formatMunicipalityName,
+  formatModelVersionLabel,
   formatPeriodLabel,
   riskClassificationLabels,
 } from "@/lib/domain-labels";
@@ -178,8 +179,10 @@ function ReportBody({
               </dd>
             </div>
             <div className="sm:col-span-3">
-              <dt className="text-xs text-muted-foreground">Versión del modelo</dt>
-              <dd className="font-mono text-sm font-medium">{data.model_version}</dd>
+              <dt className="text-xs text-muted-foreground">Modelo analítico</dt>
+              <dd className="text-sm font-medium">
+                {formatModelVersionLabel(data.model_version)}
+              </dd>
             </div>
           </dl>
         </CardContent>
@@ -190,9 +193,9 @@ function ReportBody({
         className="bg-card/90 print:break-inside-avoid print:border print:bg-white print:shadow-none"
       >
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Contribución por factor</CardTitle>
+          <CardTitle className="text-sm font-medium">¿Qué factores influyen?</CardTitle>
           <CardDescription className="print:hidden">
-            Variables que explican la señal calculada
+            Factores que más explican la señal calculada
           </CardDescription>
         </CardHeader>
         <CardContent>

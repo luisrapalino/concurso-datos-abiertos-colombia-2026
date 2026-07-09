@@ -104,8 +104,8 @@ function OutbreakPanelContent({
 
         <Card size="sm" className="bg-card/90">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Contribución por factor</CardTitle>
-            <CardDescription>Variables que explican la señal</CardDescription>
+            <CardTitle className="text-sm font-medium">¿Qué factores influyen?</CardTitle>
+            <CardDescription>Factores que más explican la señal de brote</CardDescription>
           </CardHeader>
           <CardContent>
             <FeatureContributionsChart contributions={prediction.feature_contributions} />
