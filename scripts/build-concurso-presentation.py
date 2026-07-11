@@ -18,8 +18,8 @@ BG_CLOSING = RECURSOS / ".bg-closing.png"
 TEAM_ID = "200"
 TEAM_LEVEL = "Intermedio (IA)"
 REPO_URL = "https://github.com/luisrapalino/concurso-datos-abiertos-colombia-2026"
-DEMO_URL = "http://localhost:3002/brotes"
-API_URL = "http://localhost:8000/docs"
+DEMO_URL = "https://concurso-datos-abiertos-colombia-20.vercel.app/brotes"
+API_URL = "https://epintel-api.onrender.com/docs"
 
 # Design tokens — docs/DESIGN.md
 C_DEEP = (0x0A, 0x3D, 0x38)

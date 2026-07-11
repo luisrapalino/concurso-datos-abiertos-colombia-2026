@@ -30,8 +30,19 @@ docker compose run --rm --no-deps -v "$(pwd):/repo" --entrypoint sh api \
 7. Repositorio — GitHub y documentación
 8. Cierre — valor diferencial
 
+## Demo en línea
+
+| Recurso | URL |
+|---------|-----|
+| Plataforma | https://concurso-datos-abiertos-colombia-20.vercel.app/ |
+| Radar de brotes | https://concurso-datos-abiertos-colombia-20.vercel.app/brotes |
+| Mapa | https://concurso-datos-abiertos-colombia-20.vercel.app/mapa |
+| API | https://epintel-api.onrender.com/docs |
+
 ## Capturas útiles
 
-- UI: http://localhost:3002/brotes (o puerto configurado)
-- API: http://localhost:8000/docs
+- UI en producción: https://concurso-datos-abiertos-colombia-20.vercel.app/brotes
+- UI local: http://localhost:3002/brotes (o puerto configurado)
+- API en producción: https://epintel-api.onrender.com/docs
+- API local: http://localhost:8000/docs
 - Métricas del modelo: `backend/ml/artifacts/randomforest-outbreak-v1.0.0.json`

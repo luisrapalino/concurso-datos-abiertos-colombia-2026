@@ -20,7 +20,19 @@ Reto: predecir brotes de enfermedades transmisibles integrando morbilidad, vacun
 | Rol | Contacto |
 |-----|----------|
 | Líder | luisrapalino88@gmail.com |
-| Participante 2 | Rapalinorokate@gmail.com 
+| Participante 2 | Rapalinorokate@gmail.com |
+
+## Demo en línea
+
+| Recurso | URL |
+|---------|-----|
+| **Plataforma** | [concurso-datos-abiertos-colombia-20.vercel.app](https://concurso-datos-abiertos-colombia-20.vercel.app/) |
+| **Radar de brotes** | [/brotes](https://concurso-datos-abiertos-colombia-20.vercel.app/brotes) |
+| **Mapa** | [/mapa](https://concurso-datos-abiertos-colombia-20.vercel.app/mapa) |
+| **API (OpenAPI)** | [epintel-api.onrender.com/docs](https://epintel-api.onrender.com/docs) |
+
+> En el plan free de Render la API puede tardar ~30–60 s en despertar tras inactividad. Abre `/health` unos minutos antes de la sustentación.
+
 ## Desarrollo (Docker)
 
 1. Copia variables de entorno: `cp .env.example .env` (ajusta puertos si hay conflictos locales).
