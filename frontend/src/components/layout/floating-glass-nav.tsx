@@ -90,32 +90,34 @@ function MobileNavMenu({
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="right"
-          className="liquid-glass-subtle w-[min(100vw-2rem,20rem)] border-border/40 p-0 sm:max-w-xs"
+          className="w-[min(100vw-2rem,20rem)] border-border/40 p-0 sm:max-w-xs"
         >
-          <SheetHeader className="border-b border-border/30 px-5 py-4">
-            <SheetTitle className="font-heading text-base">Menú</SheetTitle>
-          </SheetHeader>
-          <nav
-            className="flex flex-col gap-1 p-3"
-            aria-label="Navegación móvil"
-          >
-            {links.map((link) => {
-              const isActive = link.type === "route" && activeHref === link.href;
+          <div className="liquid-glass-subtle flex h-full flex-col">
+            <SheetHeader className="border-b border-border/30 px-5 py-4">
+              <SheetTitle className="font-heading text-base">Menú</SheetTitle>
+            </SheetHeader>
+            <nav
+              className="flex flex-col gap-1 p-3"
+              aria-label="Navegación móvil"
+            >
+              {links.map((link) => {
+                const isActive = link.type === "route" && activeHref === link.href;
 
-              return (
-                <NavLinkItem
-                  key={link.href}
-                  link={link}
-                  activeHref={activeHref}
-                  onNavigate={closeMenu}
-                  className={cn(
-                    "w-full rounded-xl px-4 py-3 text-left text-base",
-                    isActive && "liquid-glass-nav-link-active",
-                  )}
-                />
-              );
-            })}
-          </nav>
+                return (
+                  <NavLinkItem
+                    key={link.href}
+                    link={link}
+                    activeHref={activeHref}
+                    onNavigate={closeMenu}
+                    className={cn(
+                      "w-full rounded-xl px-4 py-3 text-left text-base",
+                      isActive && "liquid-glass-nav-link-active",
+                    )}
+                  />
+                );
+              })}
+            </nav>
+          </div>
         </SheetContent>
       </Sheet>
     </>
