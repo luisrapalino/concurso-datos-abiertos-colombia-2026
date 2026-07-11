@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RECURSOS = ROOT / "RECURSOS"
 ARTIFACT = ROOT / "backend" / "ml" / "artifacts" / "randomforest-outbreak-v1.0.0.json"
 PORTADA = RECURSOS / "portada.png"
+SCREENSHOTS = RECURSOS / "screenshots"
 BG_CONTENT = RECURSOS / ".bg-content.png"
 BG_CLOSING = RECURSOS / ".bg-closing.png"
 
@@ -20,6 +21,12 @@ TEAM_LEVEL = "Intermedio (IA)"
 REPO_URL = "https://github.com/luisrapalino/concurso-datos-abiertos-colombia-2026"
 DEMO_URL = "https://concurso-datos-abiertos-colombia-20.vercel.app/brotes"
 API_URL = "https://epintel-api.onrender.com/docs"
+APP_URL = "https://concurso-datos-abiertos-colombia-20.vercel.app"
+
+DEMO_SCREENSHOTS: list[tuple[str, str]] = [
+    ("brotes.png", "Ficha territorial · señal y explicación SHAP"),
+    ("mapa.png", "Mapa de señales · 20 ciudades principales"),
+]
 
 # Design tokens — docs/DESIGN.md
 C_DEEP = (0x0A, 0x3D, 0x38)
@@ -527,6 +534,55 @@ def _slide_metrics(prs, metrics: dict) -> None:
     _add_footer(slide)
 
 
+def _available_demo_screenshots() -> list[tuple[Path, str]]:
+    available: list[tuple[Path, str]] = []
+    for filename, caption in DEMO_SCREENSHOTS:
+        path = SCREENSHOTS / filename
+        if path.exists():
+            available.append((path, caption))
+    return available
+
+
+def _slide_demo_screenshots(prs) -> None:
+    from pptx.util import Inches, Pt
+
+    shots = _available_demo_screenshots()
+    if not shots:
+        return
+
+    blank = prs.slide_layouts[6]
+    slide = prs.slides.add_slide(blank)
+    _add_brand_header(slide, "Plataforma en producción", eyebrow="Demo")
+
+    if len(shots) == 1:
+        positions = [(0.75, 1.55, 11.8)]
+    else:
+        positions = [(0.6, 1.55, 5.95), (6.75, 1.55, 5.95)]
+
+    for (left, top, width), (image_path, caption) in zip(positions, shots, strict=False):
+        _rounded_card(slide, Inches(left), Inches(top), Inches(width), Inches(4.55), C_PRIMARY)
+        slide.shapes.add_picture(
+            str(image_path),
+            Inches(left + 0.08),
+            Inches(top + 0.12),
+            width=Inches(width - 0.16),
+            height=Inches(4.0),
+        )
+        tb = _textbox(slide, Inches(left + 0.12), Inches(top + 4.18), Inches(width - 0.24), Inches(0.35))
+        tf = tb.text_frame
+        tf.text = caption
+        tf.paragraphs[0].font.size = Pt(11)
+        tf.paragraphs[0].font.color.rgb = _rgb(C_MUTED)
+        tf.paragraphs[0].font.bold = True
+
+    tb = _textbox(slide, Inches(0.75), Inches(6.35), Inches(11.8), Inches(0.45))
+    tf = tb.text_frame
+    tf.text = f"{APP_URL}  ·  {DEMO_URL}"
+    tf.paragraphs[0].font.size = Pt(10)
+    tf.paragraphs[0].font.color.rgb = _rgb(C_PRIMARY)
+    _add_footer(slide)
+
+
 def _slide_closing(prs) -> None:
     from pptx.util import Inches, Pt
 
@@ -594,6 +650,7 @@ def build_pptx(metrics: dict) -> Path:
     _slide_data_sources(prs)
     _slide_architecture(prs)
     _slide_metrics(prs, metrics)
+    _slide_demo_screenshots(prs)
     _slide_content(
         prs,
         "Impacto y sostenibilidad",
@@ -821,6 +878,28 @@ def build_pdf(metrics: dict) -> Path:
     story.append(metric_table)
     story.append(Spacer(1, 0.25 * cm))
     story.append(Paragraph(f"Demo: {DEMO_URL}", accent_style))
+
+    shots = _available_demo_screenshots()
+    if shots:
+        story.append(Spacer(1, 0.2 * cm))
+        story.append(Paragraph("Capturas de la plataforma", slide_title))
+        if len(shots) == 1:
+            img_w = page_w - 3.6 * cm
+            story.append(
+                Image(str(shots[0][0]), width=img_w, height=img_w * 0.56, hAlign="CENTER")
+            )
+            story.append(Paragraph(shots[0][1], body_style))
+        else:
+            img_w = (page_w - 4.2 * cm) / 2
+            img_h = img_w * 0.56
+            row = [
+                [Image(str(shots[0][0]), width=img_w, height=img_h), Image(str(shots[1][0]), width=img_w, height=img_h)],
+                [Paragraph(shots[0][1], body_style), Paragraph(shots[1][1], body_style)],
+            ]
+            shot_table = Table(row, colWidths=[img_w + 0.3 * cm, img_w + 0.3 * cm])
+            shot_table.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP")]))
+            story.append(shot_table)
+
     story.append(PageBreak())
 
     story += [Paragraph("Impacto y sostenibilidad", slide_title)]

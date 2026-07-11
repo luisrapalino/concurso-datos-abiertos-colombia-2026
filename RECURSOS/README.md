@@ -11,8 +11,16 @@ Material de presentación del **Equipo ID 200** (nivel **Intermedio IA**).
 | `Presentacion.pptx` | Presentación editable (8 diapositivas, lineamientos sustentación 2026) |
 | `presentacion.pdf`  | Versión PDF para evaluación                                            |
 | `portada.png`       | Captura de la diapositiva principal                                    |
+| `screenshots/`      | Capturas de la demo en producción (brotes, mapa, landing)              |
 
-Regenerar tras cambios en métricas del modelo:
+Regenerar capturas desde la demo en Vercel:
+
+```bash
+cd frontend
+E2E_BASE_URL=https://concurso-datos-abiertos-colombia-20.vercel.app npx playwright test e2e/capture-screenshots.spec.ts
+```
+
+Regenerar tras cambios en métricas del modelo o capturas:
 
 ```bash
 docker compose run --rm --no-deps -v "$(pwd):/repo" --entrypoint sh api \
