@@ -1,6 +1,8 @@
 .env
 docker-compose.override.yml
 backups/
+epintel.dump
+*.dump
 .venv/
 venv/
 __pycache__/

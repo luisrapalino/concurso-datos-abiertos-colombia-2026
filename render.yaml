@@ -1,0 +1,22 @@
+# Render Blueprint — API FastAPI (demo gratuita)
+# Frontend en Vercel, Postgres en Neon. Ver docs/deploy-free-demo.md.
+services:
+  - type: web
+    name: epintel-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Cadena de Neon en formato psycopg v3, p. ej.:
+      # postgresql+psycopg://USER:PASS@HOST/DB?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # Dominio público del frontend en Vercel, p. ej. https://tu-app.vercel.app
+      - key: CORS_ORIGINS
+        sync: false
+      # Opcional: solo si vas a ingestar en vivo desde datos.gov.co
+      - key: SOCRATA_APP_TOKEN
+        sync: false
