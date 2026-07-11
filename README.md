@@ -5,33 +5,31 @@ Plataforma de inteligencia epidemiológica territorial basada en **datos abierto
 **Concurso de Datos Abiertos Colombia 2026** — nivel **Intermedio (IA)**  
 Reto: predecir brotes de enfermedades transmisibles integrando morbilidad, vacunación, calidad del aire y acceso a salud.
 
-| Aspecto | Detalle |
-|---------|---------|
-| **Equipo ID** | 200 |
-| **Reto** | Salud y Bienestar — brotes transmisibles con IA |
-| Modelo principal | `randomforest-outbreak-v1.0.0` (Random Forest + SHAP) |
-| Variables ML | 15 features multivariadas |
-| Fuentes abiertas | 4–5 conjuntos [datos.gov.co](https://www.datos.gov.co) |
-| Validación | Split temporal train ≤2020 / test ≥2021 |
+| Aspecto               | Detalle                                                    |
+| --------------------- | ---------------------------------------------------------- |
+| **Equipo ID**         | 200                                                        |
+| **Reto**              | Salud y Bienestar — brotes transmisibles con IA            |
+| Modelo principal      | `randomforest-outbreak-v1.0.0` (Random Forest + SHAP)      |
+| Variables ML          | 15 features multivariadas                                  |
+| Fuentes abiertas      | 4–5 conjuntos [datos.gov.co](https://www.datos.gov.co)     |
+| Validación            | Split temporal train ≤2020 / test ≥2021                    |
 | Trazabilidad concurso | [`docs/concurso-alignment.md`](docs/concurso-alignment.md) |
 
 ### Equipo
 
-| Rol | Contacto |
-|-----|----------|
-| Líder | luisrapalino88@gmail.com |
+| Rol            | Contacto                 |
+| -------------- | ------------------------ |
+| Líder          | luisrapalino88@gmail.com |
 | Participante 2 | Rapalinorokate@gmail.com |
 
 ## Demo en línea
 
-| Recurso | URL |
-|---------|-----|
-| **Plataforma** | [concurso-datos-abiertos-colombia-20.vercel.app](https://concurso-datos-abiertos-colombia-20.vercel.app/) |
-| **Radar de brotes** | [/brotes](https://concurso-datos-abiertos-colombia-20.vercel.app/brotes) |
-| **Mapa** | [/mapa](https://concurso-datos-abiertos-colombia-20.vercel.app/mapa) |
-| **API (OpenAPI)** | [epintel-api.onrender.com/docs](https://epintel-api.onrender.com/docs) |
-
-> En el plan free de Render la API puede tardar ~30–60 s en despertar tras inactividad. Abre `/health` unos minutos antes de la sustentación.
+| Recurso             | URL                                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Plataforma**      | [concurso-datos-abiertos-colombia-20.vercel.app](https://concurso-datos-abiertos-colombia-20.vercel.app/) |
+| **Radar de brotes** | [/brotes](https://concurso-datos-abiertos-colombia-20.vercel.app/brotes)                                  |
+| **Mapa**            | [/mapa](https://concurso-datos-abiertos-colombia-20.vercel.app/mapa)                                      |
+| **API (OpenAPI)**   | [epintel-api.onrender.com/docs](https://epintel-api.onrender.com/docs)                                    |
 
 ## Desarrollo (Docker)
 
