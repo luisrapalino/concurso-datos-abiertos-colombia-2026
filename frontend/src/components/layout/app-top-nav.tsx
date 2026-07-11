@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { Bug } from "lucide-react";
 import { usePathname } from "next/navigation";
 import {
   FLOATING_NAV_OFFSET,
@@ -21,6 +23,17 @@ export function AppTopNav() {
 
   return (
     <FloatingGlassNav
+      brand={
+        <Link
+          href="/radar"
+          className="liquid-glass-brand flex items-center rounded-full p-1"
+          aria-label="Radar de Brotes"
+        >
+          <span className="flex size-8 items-center justify-center rounded-full bg-primary/90 text-primary-foreground shadow-sm">
+            <Bug className="size-3.5" />
+          </span>
+        </Link>
+      }
       activeHref={pathname}
       links={navItems.map(({ href, label }) => ({ type: "route" as const, href, label }))}
       actions={<ThemeToggle variant="glass" />}

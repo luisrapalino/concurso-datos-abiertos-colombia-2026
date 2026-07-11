@@ -30,8 +30,12 @@ export function LandingNav() {
       actions={
         <>
           <ThemeToggle variant="glass" />
-          <Button render={<Link href="/radar" />} size="sm" className="h-8 gap-1.5 rounded-full px-3.5">
-            Entrar
+          <Button
+            render={<Link href="/radar" />}
+            size="sm"
+            className="h-8 gap-1.5 rounded-full px-3 sm:px-3.5"
+          >
+            <span className="hidden min-[380px]:inline">Entrar</span>
             <ArrowRight className="size-3.5" />
           </Button>
         </>
