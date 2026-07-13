@@ -496,6 +496,104 @@ def _slide_architecture(prs) -> None:
     _add_footer(slide)
 
 
+def _slide_rf_shap_example(prs) -> None:
+    """Pedagogical mini-example: how Random Forest votes and SHAP explains."""
+    from pptx.util import Inches, Pt
+
+    blank = prs.slide_layouts[6]
+    slide = prs.slides.add_slide(blank)
+    _add_brand_header(slide, "Random Forest y SHAP — ejemplo básico", eyebrow="IA explicable")
+
+    concepts = [
+        (
+            0.6,
+            "Random Forest",
+            [
+                "Muchos árboles de decisión entrenados con muestras distintas.",
+                "Cada árbol responde: ¿señal de brote? (sí / no).",
+                "La probabilidad final es el promedio de votos del bosque.",
+                "Robusto ante ruido y combina 15 variables del panel.",
+            ],
+            C_PRIMARY,
+        ),
+        (
+            6.75,
+            "SHAP (TreeExplainer)",
+            [
+                "Después de predecir, explica el porqué de la probabilidad.",
+                "Cada variable recibe una contribución (+ sube, − baja).",
+                "Las sumas de SHAP reconstruyen la salida del modelo.",
+                "Misma lógica que en la ficha territorial de la demo.",
+            ],
+            C_SIGNAL,
+        ),
+    ]
+    for x, title, bullets, accent in concepts:
+        _rounded_card(slide, Inches(x), Inches(1.55), Inches(5.95), Inches(2.35), accent)
+        tb = _textbox(slide, Inches(x + 0.2), Inches(1.72), Inches(5.5), Inches(0.4))
+        tf = tb.text_frame
+        tf.text = title
+        tf.paragraphs[0].font.size = Pt(14)
+        tf.paragraphs[0].font.bold = True
+        tf.paragraphs[0].font.color.rgb = _rgb(C_PRIMARY)
+        _add_bullets(slide, Inches(x + 0.22), Inches(2.12), Inches(5.5), Inches(1.65), bullets, size=11)
+
+    _rounded_card(slide, Inches(0.6), Inches(4.15), Inches(12.1), Inches(2.55), C_ACCENT)
+    tb = _textbox(slide, Inches(0.85), Inches(4.28), Inches(11.6), Inches(0.38))
+    tf = tb.text_frame
+    tf.text = "Ejemplo ilustrativo — municipio con 180 casos dengue, mediana nacional 60, crecimiento semanal ×1.8"
+    tf.paragraphs[0].font.size = Pt(12)
+    tf.paragraphs[0].font.bold = True
+    tf.paragraphs[0].font.color.rgb = _rgb(C_PRIMARY)
+
+    tb2 = _textbox(slide, Inches(0.85), Inches(4.68), Inches(3.2), Inches(0.55))
+    tf2 = tb2.text_frame
+    tf2.text = "Salida Random Forest"
+    tf2.paragraphs[0].font.size = Pt(10)
+    tf2.paragraphs[0].font.color.rgb = _rgb(C_MUTED)
+    tb3 = _textbox(slide, Inches(0.85), Inches(5.02), Inches(3.2), Inches(0.75))
+    tf3 = tb3.text_frame
+    tf3.text = "82 %"
+    tf3.paragraphs[0].font.size = Pt(34)
+    tf3.paragraphs[0].font.bold = True
+    tf3.paragraphs[0].font.color.rgb = _rgb(C_SIGNAL)
+    tb4 = _textbox(slide, Inches(0.85), Inches(5.72), Inches(3.2), Inches(0.35))
+    tf4 = tb4.text_frame
+    tf4.text = "probabilidad de señal de brote"
+    tf4.paragraphs[0].font.size = Pt(9)
+    tf4.paragraphs[0].font.color.rgb = _rgb(C_MUTED)
+
+    shap_rows = [
+        ("Casos vs mediana nacional", "+28", C_SIGNAL, 0.78),
+        ("Crecimiento acelerado (WoW)", "+18", C_SIGNAL, 0.55),
+        ("Ratio semana anterior", "+12", C_SIGNAL, 0.38),
+        ("Brecha de vacunación", "+9", C_SIGNAL, 0.28),
+        ("Acceso a salud (partos inst.)", "−5", C_PRIMARY, 0.18),
+    ]
+    base_x = 4.35
+    for index, (label, effect, color, bar_frac) in enumerate(shap_rows):
+        y = 4.72 + index * 0.42
+        tb_l = _textbox(slide, Inches(base_x), Inches(y), Inches(3.55), Inches(0.32))
+        tb_l.text_frame.text = label
+        tb_l.text_frame.paragraphs[0].font.size = Pt(9)
+        tb_l.text_frame.paragraphs[0].font.color.rgb = _rgb(C_TEXT)
+        bar_w = 3.8 * bar_frac
+        _rect(slide, Inches(7.95), Inches(y + 0.06), Inches(bar_w), Inches(0.18), color)
+        tb_e = _textbox(slide, Inches(11.85), Inches(y), Inches(0.7), Inches(0.32))
+        tb_e.text_frame.text = effect
+        tb_e.text_frame.paragraphs[0].font.size = Pt(10)
+        tb_e.text_frame.paragraphs[0].font.bold = True
+        tb_e.text_frame.paragraphs[0].font.color.rgb = _rgb(color)
+
+    tb_h = _textbox(slide, Inches(7.95), Inches(4.42), Inches(4.5), Inches(0.3))
+    tb_h.text_frame.text = "Contribuciones SHAP (top 5)"
+    tb_h.text_frame.paragraphs[0].font.size = Pt(10)
+    tb_h.text_frame.paragraphs[0].font.bold = True
+    tb_h.text_frame.paragraphs[0].font.color.rgb = _rgb(C_MUTED)
+
+    _add_footer(slide)
+
+
 def _slide_metrics(prs, metrics: dict) -> None:
     from pptx.util import Inches, Pt
 
@@ -649,6 +747,7 @@ def build_pptx(metrics: dict) -> Path:
     )
     _slide_data_sources(prs)
     _slide_architecture(prs)
+    _slide_rf_shap_example(prs)
     _slide_metrics(prs, metrics)
     _slide_demo_screenshots(prs)
     _slide_content(
@@ -850,6 +949,62 @@ def build_pdf(metrics: dict) -> Path:
             "Fallback rule-based auditable si no hay modelo promovido",
         ]
     )
+    story.append(PageBreak())
+
+    story.append(Paragraph("Random Forest y SHAP — ejemplo básico", slide_title))
+    story.append(
+        Paragraph(
+            "<b>Random Forest:</b> muchos árboles de decisión votan; la probabilidad final es el promedio "
+            "de votos sobre 15 variables del panel.",
+            body_style,
+        )
+    )
+    story.append(
+        Paragraph(
+            "<b>SHAP:</b> después de predecir, asigna a cada variable una contribución (+ sube la "
+            "probabilidad, − la baja). Las contribuciones reconstruyen la salida del modelo.",
+            body_style,
+        )
+    )
+    story.append(Spacer(1, 0.15 * cm))
+    story.append(
+        Paragraph(
+            "Ejemplo ilustrativo — 180 casos dengue, mediana 60, crecimiento semanal ×1.8 → "
+            "<b>82 %</b> probabilidad de señal de brote.",
+            quote_style,
+        )
+    )
+    shap_table = Table(
+        [
+            ["Variable", "Efecto SHAP"],
+            ["Casos vs mediana nacional", "+28"],
+            ["Crecimiento acelerado (WoW)", "+18"],
+            ["Ratio semana anterior", "+12"],
+            ["Brecha de vacunación", "+9"],
+            ["Acceso a salud (partos inst.)", "−5"],
+        ],
+        colWidths=[10 * cm, 3.5 * cm],
+    )
+    shap_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0a5c54")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.HexColor("#fafcfb")),
+                ("TEXTCOLOR", (0, 1), (-1, -1), colors.HexColor("#142824")),
+                ("FONTNAME", (1, 1), (1, -1), "Helvetica-Bold"),
+                ("TEXTCOLOR", (1, 1), (1, 4), colors.HexColor("#b45309")),
+                ("TEXTCOLOR", (1, 5), (1, 5), colors.HexColor("#0a5c54")),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#c8d9d4")),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("TOPPADDING", (0, 0), (-1, -1), 7),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ]
+        )
+    )
+    story.append(shap_table)
     story.append(PageBreak())
 
     story.append(Paragraph("Resultados y demo", slide_title))
