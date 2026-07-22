@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 
 from api.main import create_app
 from config.settings import get_settings
+from shared.featured_municipalities import FEATURED_MUNICIPALITY_CODES
 
 
 @pytest.mark.integration
@@ -256,9 +257,9 @@ def test_list_featured_municipalities_endpoint(client) -> None:
     response = client.get("/api/v1/municipalities/featured")
     assert response.status_code == 200
     payload = response.json()
-    assert len(payload) == 4
     codes = {item["territorial_code"] for item in payload}
-    assert codes == {"05001", "11001", "08001", "76001"}
+    assert codes == set(FEATURED_MUNICIPALITY_CODES)
+    assert len(payload) == len(FEATURED_MUNICIPALITY_CODES)
 
 
 @pytest.mark.integration
