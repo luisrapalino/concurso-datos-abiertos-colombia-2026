@@ -122,7 +122,7 @@ Migraciones: `backend/alembic` + `backend/alembic.ini`.
 
 - [docs/concurso-alignment.md](docs/concurso-alignment.md) — trazabilidad con el reto del concurso (nivel Intermedio).
 - [docs/data-dictionary.md](docs/data-dictionary.md) — 15 variables del modelo de brotes.
-- [docs/data-sources.md](docs/data-sources.md) — catálogo de fuentes datos.gov.co.
+- [docs/data-sources.md](docs/data-sources.md) — datasets datos.gov.co, variables de dominio y columnas consumidas.
 - [docs/ml-evaluation.md](docs/ml-evaluation.md) — evaluación, validación temporal, ciclo promote/rollback.
 - [AGENTS.md](AGENTS.md) — visión del producto, stack, arquitectura (DDD), reglas de backend, frontend y ML.
 - [docs/roadmap.md](docs/roadmap.md) — plan por fases hasta producto mínimo institucional completo.
